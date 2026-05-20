@@ -4,13 +4,15 @@ namespace FraudDetection.Models
 {
     public class FraudRecord
     {
-        public string TransactionCode { get; set; } = string.Empty;
+        public string SenderCpf { get; set; } = "";
 
-        public string UserCpf { get; set; } = string.Empty;
+        public string ReceiverCpf { get; set; } = "";
 
         public decimal Amount { get; set; }
 
-        public string Reason { get; set; } = string.Empty;
+        public string Location { get; set; } = "";
+
+        public string Reason { get; set; } = "";
 
         public DateTime Date { get; set; }
     }

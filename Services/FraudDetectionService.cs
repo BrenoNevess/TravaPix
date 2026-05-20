@@ -2,24 +2,27 @@ using FraudDetection.Models;
 
 namespace FraudDetection.Services
 {
-    public class FraudDetectionService
+    public static class FraudDetectionService
     {
-        public bool IsFraud(decimal amount)
+        public static bool AnalyzeTransaction(
+            TransactionRecord transaction
+        )
         {
-            return amount >= 5000;
-        }
-
-        public FraudRecord GenerateFraud(
-            TransactionRecord transaction)
-        {
-            return new FraudRecord
+            if (transaction.Amount >= 5000)
             {
-                PurchaseCode = transaction.PurchaseCode,
-                Cpf = transaction.DestinationCpf,
-                Amount = transaction.Amount,
-                Date = DateTime.Now,
-                Reason = "Valor elevado que exige análise"
-            };
+                return true;
+            }
+
+            if (
+                transaction.Location
+                    .ToLower()
+                    .Contains("russia")
+            )
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
