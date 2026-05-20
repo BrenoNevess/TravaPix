@@ -1,6 +1,9 @@
 using System.Drawing;
 using System.Windows.Forms;
 
+using FraudDetection.Core;
+using FraudDetection.Models;
+
 namespace FraudDetection.Interface.Forms
 {
     public class FraudForm : Form
@@ -10,27 +13,39 @@ namespace FraudDetection.Interface.Forms
         public FraudForm()
         {
             InitializeFraudForm();
+
+            LoadFrauds();
+
+            EventBus.OnDataChanged +=
+                RefreshFrauds;
         }
 
         private void InitializeFraudForm()
         {
-            BackColor = Color.FromArgb(18, 18, 18);
+            BackColor =
+                Color.FromArgb(18, 18, 18);
 
             Panel container = new Panel
             {
                 Size = new Size(1150, 700),
 
                 BackColor =
-                    Color.FromArgb(28, 28, 28)
+                    Color.FromArgb(
+                        28,
+                        28,
+                        28
+                    )
             };
 
             Controls.Add(container);
 
-            container.Location = new Point(295, 100);
+            container.Location =
+                new Point(295, 100);
 
             Label lblTitle = new Label
             {
-                Text = "FRAUDES DETECTADAS",
+                Text =
+                    "FRAUDES DETECTADAS",
 
                 ForeColor = Color.White,
 
@@ -42,25 +57,41 @@ namespace FraudDetection.Interface.Forms
 
                 AutoSize = true,
 
-                Location = new Point(30, 25)
+                Location = new Point(
+                    30,
+                    25
+                )
             };
 
             container.Controls.Add(lblTitle);
 
             dgvFrauds = new DataGridView
             {
-                Size = new Size(1080, 540),
+                Size = new Size(
+                    1080,
+                    540
+                ),
 
-                Location = new Point(30, 100),
+                Location = new Point(
+                    30,
+                    100
+                ),
 
                 BackgroundColor =
-                    Color.FromArgb(18, 18, 18),
+                    Color.FromArgb(
+                        18,
+                        18,
+                        18
+                    ),
 
-                BorderStyle = BorderStyle.None,
+                BorderStyle =
+                    BorderStyle.None,
 
-                RowHeadersVisible = false,
+                RowHeadersVisible =
+                    false,
 
-                AllowUserToAddRows = false,
+                AllowUserToAddRows =
+                    false,
 
                 ReadOnly = true,
 
@@ -68,23 +99,45 @@ namespace FraudDetection.Interface.Forms
                     DataGridViewAutoSizeColumnsMode.Fill
             };
 
-            dgvFrauds.EnableHeadersVisualStyles = false;
+            dgvFrauds.EnableHeadersVisualStyles =
+                false;
 
-            dgvFrauds.ColumnHeadersDefaultCellStyle.BackColor =
-                Color.FromArgb(45, 45, 45);
+            dgvFrauds
+                .ColumnHeadersDefaultCellStyle
+                .BackColor =
+                Color.FromArgb(
+                    45,
+                    45,
+                    45
+                );
 
-            dgvFrauds.ColumnHeadersDefaultCellStyle.ForeColor =
+            dgvFrauds
+                .ColumnHeadersDefaultCellStyle
+                .ForeColor =
                 Color.White;
 
-            dgvFrauds.DefaultCellStyle.BackColor =
-                Color.FromArgb(30, 30, 30);
+            dgvFrauds
+                .DefaultCellStyle
+                .BackColor =
+                Color.FromArgb(
+                    30,
+                    30,
+                    30
+                );
 
-            dgvFrauds.DefaultCellStyle.ForeColor =
+            dgvFrauds
+                .DefaultCellStyle
+                .ForeColor =
                 Color.White;
 
             dgvFrauds.Columns.Add(
-                "Cpf",
-                "CPF"
+                "SenderCpf",
+                "CPF Remetente"
+            );
+
+            dgvFrauds.Columns.Add(
+                "ReceiverCpf",
+                "CPF Destinatário"
             );
 
             dgvFrauds.Columns.Add(
@@ -107,15 +160,37 @@ namespace FraudDetection.Interface.Forms
                 "Data"
             );
 
-            container.Controls.Add(dgvFrauds);
-
-            dgvFrauds.Rows.Add(
-                "123.456.789-00",
-                "R$ 15.000",
-                "São Paulo",
-                "Valor elevado",
-                "17/05/2026"
+            container.Controls.Add(
+                dgvFrauds
             );
+        }
+
+        private void LoadFrauds()
+        {
+            dgvFrauds.Rows.Clear();
+
+            foreach (
+                FraudRecord fraud
+                in DataStore.Frauds
+            )
+            {
+                dgvFrauds.Rows.Add(
+                    fraud.SenderCpf,
+                    fraud.ReceiverCpf,
+                    $"R$ {fraud.Amount:N2}",
+                    fraud.Location,
+                    fraud.Reason,
+                    fraud.Date
+                        .ToString(
+                            "dd/MM/yyyy HH:mm"
+                        )
+                );
+            }
+        }
+
+        private void RefreshFrauds()
+        {
+            LoadFrauds();
         }
     }
 }

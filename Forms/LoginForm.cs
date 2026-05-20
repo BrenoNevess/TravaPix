@@ -2,7 +2,9 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace FraudDetection.Forms
+using FraudDetection.Services;
+
+namespace FraudDetection.Interface.Forms
 {
     public class LoginForm : Form
     {
@@ -10,6 +12,10 @@ namespace FraudDetection.Forms
         private TextBox txtPassword = null!;
 
         private Button btnLogin = null!;
+
+        private readonly AuthService
+            _authService =
+                new AuthService();
 
         public LoginForm()
         {
@@ -28,7 +34,11 @@ namespace FraudDetection.Forms
                 Size = new Size(700, 500),
 
                 BackColor =
-                    Color.FromArgb(28, 28, 28)
+                    Color.FromArgb(
+                        28,
+                        28,
+                        28
+                    )
             };
 
             Controls.Add(container);
@@ -50,7 +60,10 @@ namespace FraudDetection.Forms
 
                 AutoSize = true,
 
-                Location = new Point(280, 40)
+                Location = new Point(
+                    280,
+                    40
+                )
             };
 
             container.Controls.Add(lblTitle);
@@ -67,24 +80,38 @@ namespace FraudDetection.Forms
                     250
                 );
 
-            txtPassword.PasswordChar = '*';
+            txtPassword.PasswordChar =
+                '*';
 
             container.Controls.Add(txtCpf);
 
-            container.Controls.Add(txtPassword);
+            container.Controls.Add(
+                txtPassword
+            );
 
             btnLogin = new Button
             {
                 Text = "Entrar",
 
-                Size = new Size(400, 45),
+                Size = new Size(
+                    400,
+                    45
+                ),
 
-                Location = new Point(150, 360),
+                Location = new Point(
+                    150,
+                    360
+                ),
 
-                FlatStyle = FlatStyle.Flat,
+                FlatStyle =
+                    FlatStyle.Flat,
 
                 BackColor =
-                    Color.FromArgb(0, 120, 215),
+                    Color.FromArgb(
+                        0,
+                        120,
+                        215
+                    ),
 
                 ForeColor = Color.White,
 
@@ -97,11 +124,15 @@ namespace FraudDetection.Forms
                 Cursor = Cursors.Hand
             };
 
-            btnLogin.FlatAppearance.BorderSize = 0;
+            btnLogin.FlatAppearance
+                .BorderSize = 0;
 
-            btnLogin.Click += BtnLogin_Click;
+            btnLogin.Click +=
+                BtnLogin_Click;
 
-            container.Controls.Add(btnLogin);
+            container.Controls.Add(
+                btnLogin
+            );
         }
 
         private TextBox CreateTextBox(
@@ -111,12 +142,22 @@ namespace FraudDetection.Forms
         {
             TextBox txt = new TextBox
             {
-                Size = new Size(400, 40),
+                Size = new Size(
+                    400,
+                    40
+                ),
 
-                Location = new Point(150, y),
+                Location = new Point(
+                    150,
+                    y
+                ),
 
                 BackColor =
-                    Color.FromArgb(40, 40, 40),
+                    Color.FromArgb(
+                        40,
+                        40,
+                        40
+                    ),
 
                 ForeColor = Color.White,
 
@@ -133,7 +174,10 @@ namespace FraudDetection.Forms
 
             txt.GotFocus += (s, e) =>
             {
-                if (txt.Text == placeholder)
+                if (
+                    txt.Text ==
+                    placeholder
+                )
                 {
                     txt.Text = "";
                 }
@@ -147,7 +191,8 @@ namespace FraudDetection.Forms
                     )
                 )
                 {
-                    txt.Text = placeholder;
+                    txt.Text =
+                        placeholder;
                 }
             };
 
@@ -162,14 +207,39 @@ namespace FraudDetection.Forms
             if (
                 txtCpf.Text == "CPF" ||
 
-                txtPassword.Text == "Senha"
+                txtPassword.Text ==
+                    "Senha"
             )
             {
                 MessageBox.Show(
                     "Preencha todos os campos.",
+
                     "Erro",
+
                     MessageBoxButtons.OK,
+
                     MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            bool success =
+                _authService.Login(
+                    txtCpf.Text,
+                    txtPassword.Text
+                );
+
+            if (!success)
+            {
+                MessageBox.Show(
+                    "CPF ou senha inválidos.",
+
+                    "Erro",
+
+                    MessageBoxButtons.OK,
+
+                    MessageBoxIcon.Error
                 );
 
                 return;
@@ -177,8 +247,11 @@ namespace FraudDetection.Forms
 
             MessageBox.Show(
                 "Login realizado com sucesso.",
+
                 "Login",
+
                 MessageBoxButtons.OK,
+
                 MessageBoxIcon.Information
             );
         }

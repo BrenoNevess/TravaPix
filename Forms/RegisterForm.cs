@@ -2,6 +2,10 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
+using FraudDetection.Models;
+using FraudDetection.Repositories;
+using FraudDetection.Core;
+
 namespace FraudDetection.Forms
 {
     public class RegisterForm : Form
@@ -17,6 +21,9 @@ namespace FraudDetection.Forms
         private TextBox txtCardLimit = null!;
 
         private Button btnRegister = null!;
+
+        private readonly IUserRepository userRepository =
+            new FakeUserRepository();
 
         public RegisterForm()
         {
@@ -214,12 +221,100 @@ namespace FraudDetection.Forms
             EventArgs e
         )
         {
+            if (
+                txtName.Text == "Nome Completo" ||
+                txtCpf.Text == "CPF" ||
+                txtEmail.Text == "Email" ||
+                txtPassword.Text == "Senha"
+            )
+            {
+                MessageBox.Show(
+                    "Preencha todos os campos obrigatórios.",
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
+            decimal.TryParse(
+                txtCardLimit.Text,
+                out decimal limit
+            );
+
+            Card card = new Card
+            {
+                CardNumber =
+                    txtCardNumber.Text,
+
+                Cvv =
+                    txtCardCvv.Text,
+
+                ExpiryDate =
+                    txtCardExpiry.Text,
+
+                Limit = limit
+            };
+
+            User user = new User
+            {
+                Name =
+                    txtName.Text,
+
+                Cpf =
+                    txtCpf.Text,
+
+                Email =
+                    txtEmail.Text,
+
+                Password =
+                    txtPassword.Text,
+
+                IsAdmin = false,
+
+                Card = card
+            };
+
+            userRepository.Add(user);
+
+            EventBus.NotifyDataChanged();
+
             MessageBox.Show(
                 "Usuário cadastrado com sucesso.",
                 "Cadastro",
                 MessageBoxButtons.OK,
                 MessageBoxIcon.Information
             );
+
+            ClearFields();
+        }
+
+        private void ClearFields()
+        {
+            txtName.Text =
+                "Nome Completo";
+
+            txtCpf.Text =
+                "CPF";
+
+            txtEmail.Text =
+                "Email";
+
+            txtPassword.Text =
+                "Senha";
+
+            txtCardNumber.Text =
+                "Número do Cartão";
+
+            txtCardCvv.Text =
+                "CVV";
+
+            txtCardExpiry.Text =
+                "Validade";
+
+            txtCardLimit.Text =
+                "Limite do Cartão";
         }
     }
 }

@@ -2,9 +2,7 @@ namespace FraudDetection.Models
 {
     public class User
     {
-        public int Id { get; set; }
-
-        public string FullName { get; set; } = "";
+        public string Name { get; set; } = "";
 
         public string Cpf { get; set; } = "";
 
@@ -12,6 +10,8 @@ namespace FraudDetection.Models
 
         public string Password { get; set; } = "";
 
-        public Card? Card { get; set; }
+        public bool IsAdmin { get; set; }
+
+        public Card Card { get; set; } = new();
     }
 }

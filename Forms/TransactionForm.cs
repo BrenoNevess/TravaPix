@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using FraudDetection.Models;
 using FraudDetection.Core;
 using FraudDetection.Services;
+using FraudDetection.Repositories;
 
 namespace FraudDetection.Interface.Forms
 {
@@ -17,6 +18,14 @@ namespace FraudDetection.Interface.Forms
         private TextBox txtDescription = null!;
 
         private Button btnProcess = null!;
+
+        private readonly ITransactionRepository
+            transactionRepository =
+                new FakeTransactionRepository();
+
+        private readonly IFraudRepository
+            fraudRepository =
+                new FakeFraudRepository();
 
         public TransactionForm()
         {
@@ -199,7 +208,7 @@ namespace FraudDetection.Interface.Forms
             )
             {
                 MessageBox.Show(
-                    "Preencha todos os campos obrigatórios.",
+                    "Preencha os campos obrigatórios.",
                     "Erro",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Warning
@@ -247,7 +256,7 @@ namespace FraudDetection.Interface.Forms
                         DateTime.Now
                 };
 
-            DataStore.Transactions.Add(
+            transactionRepository.Add(
                 transaction
             );
 
@@ -281,7 +290,7 @@ namespace FraudDetection.Interface.Forms
                             "Transação suspeita detectada automaticamente."
                     };
 
-                DataStore.Frauds.Add(
+                fraudRepository.Add(
                     fraud
                 );
             }
@@ -312,7 +321,7 @@ namespace FraudDetection.Interface.Forms
 
             txtReceiverCpf.Text =
                 "CPF Destinatário";
-    
+
             txtAmount.Text =
                 "Valor da Transação";
 
