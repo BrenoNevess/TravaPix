@@ -118,7 +118,7 @@ namespace FraudDetection.Interface.Controls
         }
 
         private void BtnRegister_Click(
-            object sender,
+            object? sender,
             EventArgs e
         )
         {

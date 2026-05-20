@@ -1,47 +1,47 @@
-using FraudDetection.Core;
 using FraudDetection.Models;
 using FraudDetection.Repositories;
+using FraudDetection.Core;
 
 namespace FraudDetection.Services
 {
     public class TransactionService
     {
-        private readonly
-            ITransactionRepository
-            _transactionRepository;
+        private readonly FakeTransactionRepository
+            transactionRepository = new();
 
-        private readonly
-            IFraudRepository
-            _fraudRepository;
+        private readonly FakeFraudRepository
+            fraudRepository = new();
 
-        public TransactionService()
-        {
-            _transactionRepository =
-                new FakeTransactionRepository();
-
-            _fraudRepository =
-                new FakeFraudRepository();
-        }
-
-        public bool CreateTransaction(
+        public FraudAnalysisResult ProcessTransaction(
             TransactionRecord transaction
         )
         {
-            _transactionRepository.Add(
-                transaction
-            );
-
-            bool suspicious =
+            FraudAnalysisResult analysis =
                 FraudDetectionService
                     .AnalyzeTransaction(
                         transaction
                     );
 
-            if (suspicious)
+            transaction.RiskScore =
+                analysis.RiskScore;
+
+            transaction.RiskLevel =
+                analysis.RiskLevel;
+
+            transaction.IsFraud =
+                analysis.IsFraud;
+
+            transactionRepository.Add(
+                transaction
+            );
+
+            if (analysis.IsFraud)
             {
                 FraudRecord fraud =
                     new FraudRecord
                     {
+                        Id = transaction.Id,
+
                         SenderCpf =
                             transaction.SenderCpf,
 
@@ -58,17 +58,23 @@ namespace FraudDetection.Services
                             transaction.Date,
 
                         Reason =
-                            "Fraude detectada automaticamente."
+                            analysis.Reason,
+
+                        RiskScore =
+                            analysis.RiskScore,
+
+                        RiskLevel =
+                            analysis.RiskLevel
                     };
 
-                _fraudRepository.Add(
+                fraudRepository.Add(
                     fraud
                 );
             }
 
             EventBus.NotifyDataChanged();
 
-            return suspicious;
+            return analysis;
         }
     }
 }

@@ -11,6 +11,12 @@ namespace FraudDetection.Interface.Forms
 {
     public class TransactionForm : Form
     {
+        private readonly FakeTransactionRepository
+            transactionRepository = new();
+
+        private readonly FakeFraudRepository
+            fraudRepository = new();
+
         private TextBox txtSenderCpf = null!;
         private TextBox txtReceiverCpf = null!;
         private TextBox txtAmount = null!;
@@ -18,14 +24,6 @@ namespace FraudDetection.Interface.Forms
         private TextBox txtDescription = null!;
 
         private Button btnProcess = null!;
-
-        private readonly ITransactionRepository
-            transactionRepository =
-                new FakeTransactionRepository();
-
-        private readonly IFraudRepository
-            fraudRepository =
-                new FakeFraudRepository();
 
         public TransactionForm()
         {
@@ -36,7 +34,8 @@ namespace FraudDetection.Interface.Forms
         {
             AutoScroll = true;
 
-            BackColor = Color.FromArgb(18, 18, 18);
+            BackColor =
+                Color.FromArgb(18, 18, 18);
 
             Panel container = new Panel
             {
@@ -100,28 +99,45 @@ namespace FraudDetection.Interface.Forms
                     480
                 );
 
-            container.Controls.Add(txtSenderCpf);
+            container.Controls.Add(
+                txtSenderCpf
+            );
 
-            container.Controls.Add(txtReceiverCpf);
+            container.Controls.Add(
+                txtReceiverCpf
+            );
 
-            container.Controls.Add(txtAmount);
+            container.Controls.Add(
+                txtAmount
+            );
 
-            container.Controls.Add(txtLocation);
+            container.Controls.Add(
+                txtLocation
+            );
 
-            container.Controls.Add(txtDescription);
+            container.Controls.Add(
+                txtDescription
+            );
 
             btnProcess = new Button
             {
-                Text = "Processar Transação",
+                Text =
+                    "Processar Transação",
 
                 Size = new Size(500, 45),
 
-                Location = new Point(170, 600),
+                Location =
+                    new Point(170, 600),
 
-                FlatStyle = FlatStyle.Flat,
+                FlatStyle =
+                    FlatStyle.Flat,
 
                 BackColor =
-                    Color.FromArgb(0, 120, 215),
+                    Color.FromArgb(
+                        0,
+                        120,
+                        215
+                    ),
 
                 ForeColor = Color.White,
 
@@ -134,11 +150,16 @@ namespace FraudDetection.Interface.Forms
                 Cursor = Cursors.Hand
             };
 
-            btnProcess.FlatAppearance.BorderSize = 0;
+            btnProcess
+                .FlatAppearance
+                .BorderSize = 0;
 
-            btnProcess.Click += BtnProcess_Click;
+            btnProcess.Click +=
+                BtnProcess_Click;
 
-            container.Controls.Add(btnProcess);
+            container.Controls.Add(
+                btnProcess
+            );
         }
 
         private TextBox CreateTextBox(
@@ -150,10 +171,15 @@ namespace FraudDetection.Interface.Forms
             {
                 Size = new Size(500, 40),
 
-                Location = new Point(170, y),
+                Location =
+                    new Point(170, y),
 
                 BackColor =
-                    Color.FromArgb(40, 40, 40),
+                    Color.FromArgb(
+                        40,
+                        40,
+                        40
+                    ),
 
                 ForeColor = Color.White,
 
@@ -209,8 +235,11 @@ namespace FraudDetection.Interface.Forms
             {
                 MessageBox.Show(
                     "Preencha os campos obrigatórios.",
+
                     "Erro",
+
                     MessageBoxButtons.OK,
+
                     MessageBoxIcon.Warning
                 );
 
@@ -227,8 +256,11 @@ namespace FraudDetection.Interface.Forms
             {
                 MessageBox.Show(
                     "Valor inválido.",
+
                     "Erro",
+
                     MessageBoxButtons.OK,
+
                     MessageBoxIcon.Warning
                 );
 
@@ -238,6 +270,8 @@ namespace FraudDetection.Interface.Forms
             TransactionRecord transaction =
                 new TransactionRecord
                 {
+                    Id = Guid.NewGuid(),
+
                     SenderCpf =
                         txtSenderCpf.Text,
 
@@ -252,25 +286,47 @@ namespace FraudDetection.Interface.Forms
                     Description =
                         txtDescription.Text,
 
-                    Date =
-                        DateTime.Now
+                    Date = DateTime.Now
                 };
 
-            transactionRepository.Add(
-                transaction
-            );
+            /*
+             * ANÁLISE DE FRAUDE
+             */
 
-            bool suspicious =
+            FraudAnalysisResult analysis =
                 FraudDetectionService
                     .AnalyzeTransaction(
                         transaction
                     );
 
-            if (suspicious)
+            transaction.RiskScore =
+                analysis.RiskScore;
+
+            transaction.RiskLevel =
+                analysis.RiskLevel;
+
+            transaction.IsFraud =
+                analysis.IsFraud;
+
+            /*
+             * SALVA TRANSAÇÃO
+             */
+
+            transactionRepository.Add(
+                transaction
+            );
+
+            /*
+             * SALVA FRAUDE
+             */
+
+            if (analysis.IsFraud)
             {
                 FraudRecord fraud =
                     new FraudRecord
                     {
+                        Id = Guid.NewGuid(),
+
                         SenderCpf =
                             transaction.SenderCpf,
 
@@ -287,7 +343,13 @@ namespace FraudDetection.Interface.Forms
                             transaction.Date,
 
                         Reason =
-                            "Transação suspeita detectada automaticamente."
+                            analysis.Reason,
+
+                        RiskScore =
+                            analysis.RiskScore,
+
+                        RiskLevel =
+                            analysis.RiskLevel
                     };
 
                 fraudRepository.Add(
@@ -295,18 +357,26 @@ namespace FraudDetection.Interface.Forms
                 );
             }
 
+            /*
+             * EVENTO GLOBAL
+             */
+
             EventBus.NotifyDataChanged();
 
-            MessageBox.Show(
-                suspicious
-                    ? "⚠ POSSÍVEL FRAUDE DETECTADA"
-                    : "Transação processada com sucesso.",
+            /*
+             * RESULTADO
+             */
 
-                "Resultado",
+            MessageBox.Show(
+                $"Nível: {analysis.RiskLevel}\n" +
+                $"Score: {analysis.RiskScore}\n\n" +
+                $"{analysis.Reason}",
+
+                "Resultado da Análise",
 
                 MessageBoxButtons.OK,
 
-                suspicious
+                analysis.IsFraud
                     ? MessageBoxIcon.Warning
                     : MessageBoxIcon.Information
             );

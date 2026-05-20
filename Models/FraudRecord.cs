@@ -4,6 +4,8 @@ namespace FraudDetection.Models
 {
     public class FraudRecord
     {
+        public Guid Id { get; set; }
+
         public string SenderCpf { get; set; } = "";
 
         public string ReceiverCpf { get; set; } = "";
@@ -15,5 +17,11 @@ namespace FraudDetection.Models
         public string Reason { get; set; } = "";
 
         public DateTime Date { get; set; }
+
+        /*Nivel de Risco */
+
+        public int RiskScore { get; set; }
+
+        public string RiskLevel { get; set; } = "";
     }
 }
