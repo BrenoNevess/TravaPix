@@ -29,15 +29,29 @@ namespace FraudDetection.Interface.Components
         {
             Size = new Size(280, 160);
 
-            BackColor = Color.FromArgb(28, 28, 28);
+            BackColor =
+                Color.FromArgb(28, 28, 28);
+
+            BorderStyle =
+                BorderStyle.FixedSingle;
 
             lblTitle = new Label
             {
                 Text = title,
+
                 ForeColor = Color.Gray,
-                Font = new Font("Segoe UI", 12),
+
+                Font = new Font(
+                    "Segoe UI",
+                    12
+                ),
+
                 AutoSize = true,
-                Location = new Point(20, 20)
+
+                Location = new Point(
+                    20,
+                    20
+                )
             };
 
             Controls.Add(lblTitle);
@@ -45,10 +59,21 @@ namespace FraudDetection.Interface.Components
             lblValue = new Label
             {
                 Text = value,
+
                 ForeColor = accentColor,
-                Font = new Font("Segoe UI", 34, FontStyle.Bold),
+
+                Font = new Font(
+                    "Segoe UI",
+                    34,
+                    FontStyle.Bold
+                ),
+
                 AutoSize = true,
-                Location = new Point(20, 60)
+
+                Location = new Point(
+                    20,
+                    60
+                )
             };
 
             Controls.Add(lblValue);

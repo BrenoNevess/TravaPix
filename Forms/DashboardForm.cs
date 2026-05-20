@@ -1,9 +1,10 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-using FraudDetection.Core;
 using FraudDetection.Interface.Components;
-using FraudDetection.Services;
+
+using FraudDetection.Repositories;
+using FraudDetection.Core;
 
 namespace FraudDetection.Interface.Forms
 {
@@ -13,17 +14,21 @@ namespace FraudDetection.Interface.Forms
         private DashboardCard cardTransactions = null!;
         private DashboardCard cardFrauds = null!;
 
-        private DashboardService dashboardService =
-            new DashboardService();
+        private readonly FakeUserRepository
+            userRepository =
+                new FakeUserRepository();
+
+        private readonly FakeTransactionRepository
+            transactionRepository =
+                new FakeTransactionRepository();
+
+        private readonly FakeFraudRepository
+            fraudRepository =
+                new FakeFraudRepository();
 
         public DashboardForm()
         {
             InitializeDashboard();
-
-            LoadDashboardData();
-
-            EventBus.OnDataChanged +=
-                RefreshDashboard;
         }
 
         private void InitializeDashboard()
@@ -37,7 +42,8 @@ namespace FraudDetection.Interface.Forms
             {
                 Size = new Size(1100, 700),
 
-                BackColor = Color.Transparent,
+                BackColor =
+                    Color.Transparent,
 
                 Anchor = AnchorStyles.None
             };
@@ -45,12 +51,11 @@ namespace FraudDetection.Interface.Forms
             Controls.Add(container);
 
             container.Location =
-                new Point(295, 80);
+                new Point(-250, -200);
 
             Label lblTitle = new Label
             {
-                Text =
-                    "Visão Geral do Sistema",
+                Text = "Visão Geral do Sistema",
 
                 ForeColor = Color.White,
 
@@ -109,22 +114,24 @@ namespace FraudDetection.Interface.Forms
             cardFrauds.Location =
                 new Point(760, 100);
 
-            container.Controls.Add(cardUsers);
+            container.Controls.Add(
+                cardUsers
+            );
 
             container.Controls.Add(
                 cardTransactions
             );
 
-            container.Controls.Add(cardFrauds);
+            container.Controls.Add(
+                cardFrauds
+            );
 
             Panel chartPanel = new Panel
             {
                 Size = new Size(1020, 350),
 
-                Location = new Point(
-                    20,
-                    320
-                ),
+                Location =
+                    new Point(20, 320),
 
                 BackColor =
                     Color.FromArgb(
@@ -134,7 +141,9 @@ namespace FraudDetection.Interface.Forms
                     )
             };
 
-            container.Controls.Add(chartPanel);
+            container.Controls.Add(
+                chartPanel
+            );
 
             Label lblChart = new Label
             {
@@ -157,12 +166,14 @@ namespace FraudDetection.Interface.Forms
                 )
             };
 
-            chartPanel.Controls.Add(lblChart);
+            chartPanel.Controls.Add(
+                lblChart
+            );
 
             Label lblInfo = new Label
             {
                 Text =
-                    "O dashboard é atualizado automaticamente após novas transações.",
+                    "Atualização automática ativada.",
 
                 ForeColor = Color.Gray,
 
@@ -179,32 +190,38 @@ namespace FraudDetection.Interface.Forms
                 )
             };
 
-            chartPanel.Controls.Add(lblInfo);
+            chartPanel.Controls.Add(
+                lblInfo
+            );
+
+            LoadDashboardData();
+
+            EventBus.OnDataChanged +=
+                LoadDashboardData;
         }
 
         private void LoadDashboardData()
         {
             cardUsers.UpdateValue(
-                DataStore.Users.Count
+                userRepository
+                    .GetAll()
+                    .Count
                     .ToString()
             );
 
             cardTransactions.UpdateValue(
-                dashboardService
-                    .GetTotalTransactions()
+                transactionRepository
+                    .GetAll()
+                    .Count
                     .ToString()
             );
 
             cardFrauds.UpdateValue(
-                dashboardService
-                    .GetTotalFrauds()
+                fraudRepository
+                    .GetAll()
+                    .Count
                     .ToString()
             );
-        }
-
-        private void RefreshDashboard()
-        {
-            LoadDashboardData();
         }
     }
 }

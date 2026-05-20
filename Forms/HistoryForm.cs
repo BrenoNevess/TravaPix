@@ -1,6 +1,8 @@
+using System;
 using System.Drawing;
 using System.Windows.Forms;
 
+using FraudDetection.Repositories;
 using FraudDetection.Core;
 using FraudDetection.Models;
 
@@ -10,14 +12,13 @@ namespace FraudDetection.Interface.Forms
     {
         private DataGridView dgvHistory = null!;
 
+        private readonly FakeTransactionRepository
+            transactionRepository =
+                new FakeTransactionRepository();
+
         public HistoryForm()
         {
             InitializeHistory();
-
-            LoadTransactions();
-
-            EventBus.OnDataChanged +=
-                RefreshHistory;
         }
 
         private void InitializeHistory()
@@ -32,19 +33,16 @@ namespace FraudDetection.Interface.Forms
                 Size = new Size(1150, 700),
 
                 BackColor =
-                    Color.FromArgb(
-                        28,
-                        28,
-                        28
-                    ),
+                    Color.FromArgb(28, 28, 28),
 
-                Anchor = AnchorStyles.None
+                Anchor =
+                    AnchorStyles.None
             };
 
             Controls.Add(container);
 
             container.Location =
-                new Point(295, 100);
+                new Point(-300, -200);
 
             Label lblTitle = new Label
             {
@@ -67,19 +65,16 @@ namespace FraudDetection.Interface.Forms
                 )
             };
 
-            container.Controls.Add(lblTitle);
+            container.Controls.Add(
+                lblTitle
+            );
 
             dgvHistory = new DataGridView
             {
-                Size = new Size(
-                    1080,
-                    540
-                ),
+                Size = new Size(1080, 540),
 
-                Location = new Point(
-                    30,
-                    100
-                ),
+                Location =
+                    new Point(30, 100),
 
                 BackgroundColor =
                     Color.FromArgb(
@@ -106,65 +101,58 @@ namespace FraudDetection.Interface.Forms
             dgvHistory.EnableHeadersVisualStyles =
                 false;
 
-            dgvHistory
-                .ColumnHeadersDefaultCellStyle
+            dgvHistory.ColumnHeadersDefaultCellStyle
                 .BackColor =
-                Color.FromArgb(
-                    45,
-                    45,
-                    45
-                );
+                    Color.FromArgb(
+                        45,
+                        45,
+                        45
+                    );
 
-            dgvHistory
-                .ColumnHeadersDefaultCellStyle
+            dgvHistory.ColumnHeadersDefaultCellStyle
                 .ForeColor =
-                Color.White;
+                    Color.White;
 
-            dgvHistory
-                .ColumnHeadersDefaultCellStyle
+            dgvHistory.ColumnHeadersDefaultCellStyle
                 .Font =
-                new Font(
-                    "Segoe UI",
-                    10,
-                    FontStyle.Bold
-                );
+                    new Font(
+                        "Segoe UI",
+                        10,
+                        FontStyle.Bold
+                    );
 
-            dgvHistory
-                .DefaultCellStyle
+            dgvHistory.DefaultCellStyle
                 .BackColor =
-                Color.FromArgb(
-                    30,
-                    30,
-                    30
-                );
+                    Color.FromArgb(
+                        30,
+                        30,
+                        30
+                    );
 
-            dgvHistory
-                .DefaultCellStyle
+            dgvHistory.DefaultCellStyle
                 .ForeColor =
-                Color.White;
+                    Color.White;
 
-            dgvHistory
-                .DefaultCellStyle
+            dgvHistory.DefaultCellStyle
                 .SelectionBackColor =
-                Color.FromArgb(
-                    0,
-                    120,
-                    215
-                );
+                    Color.FromArgb(
+                        0,
+                        120,
+                        215
+                    );
 
-            dgvHistory
-                .DefaultCellStyle
+            dgvHistory.DefaultCellStyle
                 .SelectionForeColor =
-                Color.White;
+                    Color.White;
 
             dgvHistory.Columns.Add(
-                "SenderCpf",
-                "CPF Remetente"
+                "Code",
+                "Código"
             );
 
             dgvHistory.Columns.Add(
-                "ReceiverCpf",
-                "CPF Destinatário"
+                "Cpf",
+                "CPF"
             );
 
             dgvHistory.Columns.Add(
@@ -173,45 +161,23 @@ namespace FraudDetection.Interface.Forms
             );
 
             dgvHistory.Columns.Add(
-                "Location",
-                "Localização"
-            );
-
-            dgvHistory.Columns.Add(
-                "Description",
-                "Descrição"
-            );
-
-            dgvHistory.Columns.Add(
                 "Date",
                 "Data"
+            );
+
+            dgvHistory.Columns.Add(
+                "Status",
+                "Status"
             );
 
             container.Controls.Add(
                 dgvHistory
             );
 
-            Label lblInfo = new Label
-            {
-                Text =
-                    "As transações são atualizadas automaticamente.",
+            LoadTransactions();
 
-                ForeColor = Color.Gray,
-
-                Font = new Font(
-                    "Segoe UI",
-                    11
-                ),
-
-                AutoSize = true,
-
-                Location = new Point(
-                    30,
-                    655
-                )
-            };
-
-            container.Controls.Add(lblInfo);
+            EventBus.OnDataChanged +=
+                LoadTransactions;
         }
 
         private void LoadTransactions()
@@ -220,26 +186,28 @@ namespace FraudDetection.Interface.Forms
 
             foreach (
                 TransactionRecord transaction
-                in DataStore.Transactions
+                in transactionRepository.GetAll()
             )
             {
                 dgvHistory.Rows.Add(
+                    Guid.NewGuid()
+                        .ToString()
+                        .Substring(0, 8),
+
                     transaction.SenderCpf,
-                    transaction.ReceiverCpf,
-                    $"R$ {transaction.Amount:N2}",
-                    transaction.Location,
-                    transaction.Description,
+
+                    $"R$ {transaction.Amount}",
+
                     transaction.Date
                         .ToString(
                             "dd/MM/yyyy HH:mm"
-                        )
+                        ),
+
+                    transaction.Amount >= 5000
+                        ? "Suspeita"
+                        : "Segura"
                 );
             }
-        }
-
-        private void RefreshHistory()
-        {
-            LoadTransactions();
         }
     }
 }
