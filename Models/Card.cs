@@ -2,7 +2,7 @@ namespace FraudDetection.Models
 {
     public class Card
     {
-        public string CardNumber { get; set; } = "";
+        public string Number { get; set; } = "";
 
         public string Cvv { get; set; } = "";
 

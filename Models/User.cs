@@ -10,7 +10,7 @@ namespace FraudDetection.Models
 
         public string Password { get; set; } = "";
 
-        public bool IsAdmin { get; set; }
+        public string Role { get; set; } = "USER";
 
         public Card Card { get; set; } = new();
     }

@@ -7,29 +7,13 @@ namespace FraudDetection.Services
     public class AuthService
     {
         private readonly IUserRepository
-            _userRepository;
+            userRepository;
 
-        public AuthService()
+        public AuthService(
+            IUserRepository repository
+        )
         {
-            _userRepository =
-                new FakeUserRepository();
-        }
-
-        public bool Register(User user)
-        {
-            User? existingCpf =
-                _userRepository.GetByCpf(
-                    user.Cpf
-                );
-
-            if (existingCpf != null)
-            {
-                return false;
-            }
-
-            _userRepository.Add(user);
-
-            return true;
+            userRepository = repository;
         }
 
         public bool Login(
@@ -38,9 +22,7 @@ namespace FraudDetection.Services
         )
         {
             User? user =
-                _userRepository.GetByCpf(
-                    cpf
-                );
+                userRepository.GetByCpf(cpf);
 
             if (
                 user == null ||

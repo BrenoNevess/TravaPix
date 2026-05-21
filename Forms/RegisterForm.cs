@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 using FraudDetection.Models;
 using FraudDetection.Repositories;
-using FraudDetection.Core;
+using FraudDetection.Services;
 
 namespace FraudDetection.Forms
 {
@@ -22,11 +22,15 @@ namespace FraudDetection.Forms
 
         private Button btnRegister = null!;
 
-        private readonly IUserRepository userRepository =
-            new FakeUserRepository();
+        private readonly UserService userService;
 
         public RegisterForm()
         {
+            userService =
+                new UserService(
+                    new FakeUserRepository()
+                );
+
             InitializeRegister();
         }
 
@@ -221,31 +225,9 @@ namespace FraudDetection.Forms
             EventArgs e
         )
         {
-            if (
-                txtName.Text == "Nome Completo" ||
-                txtCpf.Text == "CPF" ||
-                txtEmail.Text == "Email" ||
-                txtPassword.Text == "Senha"
-            )
-            {
-                MessageBox.Show(
-                    "Preencha todos os campos obrigatórios.",
-                    "Erro",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-
-                return;
-            }
-
-            decimal.TryParse(
-                txtCardLimit.Text,
-                out decimal limit
-            );
-
             Card card = new Card
             {
-                CardNumber =
+                Number =
                     txtCardNumber.Text,
 
                 Cvv =
@@ -254,7 +236,10 @@ namespace FraudDetection.Forms
                 ExpiryDate =
                     txtCardExpiry.Text,
 
-                Limit = limit
+                Limit =
+                    decimal.Parse(
+                        txtCardLimit.Text
+                    )
             };
 
             User user = new User
@@ -271,14 +256,12 @@ namespace FraudDetection.Forms
                 Password =
                     txtPassword.Text,
 
-                IsAdmin = false,
+                Role = "USER",
 
                 Card = card
             };
 
-            userRepository.Add(user);
-
-            EventBus.NotifyDataChanged();
+            userService.CreateUser(user);
 
             MessageBox.Show(
                 "Usuário cadastrado com sucesso.",

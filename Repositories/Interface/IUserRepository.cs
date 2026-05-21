@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+
 using FraudDetection.Models;
 
 namespace FraudDetection.Repositories
@@ -7,8 +8,10 @@ namespace FraudDetection.Repositories
     {
         void Add(User user);
 
+        List<User> GetAll();
+
         User? GetByCpf(string cpf);
 
-        List<User> GetAll();
+        void Remove(User user);
     }
 }
