@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Fraud-Detection/Fraud-Detection.csproj" />
+  <Project Path="FraudDetection.API/FraudDetection.API.csproj" />
+</Solution>

@@ -18,7 +18,7 @@ namespace FraudDetection.Models
 
         public DateTime Date { get; set; }
 
-        /* Resultado da Análise */
+        /* Resultado da analise */
 
         public int RiskScore { get; set; }
 
