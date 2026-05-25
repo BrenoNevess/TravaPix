@@ -22,7 +22,7 @@ namespace FraudDetection.Models
 
         public int RiskScore { get; set; }
 
-        public string RiskLevel { get; set; } = "";
+        public FraudRiskLevel RiskLevel { get; set; }
 
         public bool IsFraud { get; set; }
     }

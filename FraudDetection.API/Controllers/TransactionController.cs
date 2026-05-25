@@ -1,188 +1,133 @@
 using Microsoft.AspNetCore.Mvc;
 
+using FraudDetection.API.DTOs;
 using FraudDetection.API.Models;
+using FraudDetection.API.Repositories;
 
 namespace FraudDetection.API.Controllers
 {
     [ApiController]
-    [Route("api/transactions")]
+
+    [Route("api/[controller]")]
     public class TransactionController
         : ControllerBase
     {
-        private static List<TransactionRecord>
-            transactions =
-                new();
-
-        private static List<FraudRecord>
-            frauds =
-                new();
-
         [HttpGet]
-        public IActionResult GetTransactions()
+        public IActionResult GetAll()
         {
-            return Ok(transactions);
-        }
-
-        [HttpGet("frauds")]
-        public IActionResult GetFrauds()
-        {
-            return Ok(frauds);
+            return Ok(
+                TransactionRepository
+                    .Transactions
+            );
         }
 
         [HttpPost]
-        public IActionResult CreateTransaction(
-            [FromBody]
-            TransactionRecord transaction
+        public IActionResult Create(
+            TransactionRequest request
         )
         {
-            transaction.Date =
-                DateTime.Now;
-
-            AnalyzeTransaction(
-                transaction
-            );
-
-            transactions.Add(
-                transaction
-            );
-
-            if (transaction.IsFraud)
+            if (
+                string.IsNullOrWhiteSpace(
+                    request.SenderCpf
+                )
+                ||
+                string.IsNullOrWhiteSpace(
+                    request.ReceiverCpf
+                )
+            )
             {
-                FraudRecord fraud =
-                    new FraudRecord
+                return BadRequest(
+                    new
                     {
-                        SenderCpf =
-                            transaction.SenderCpf,
-
-                        ReceiverCpf =
-                            transaction.ReceiverCpf,
-
-                        Amount =
-                            transaction.Amount,
-
-                        Location =
-                            transaction.Location,
-
-                        Date =
-                            transaction.Date,
-
-                        RiskLevel =
-                            transaction.RiskLevel,
-
-                        Reason =
-                            transaction.FraudReason
-                    };
-
-                frauds.Add(fraud);
+                        message =
+                            "CPF obrigatório."
+                    }
+                );
             }
+
+            if (
+                request.Amount <= 0
+            )
+            {
+                return BadRequest(
+                    new
+                    {
+                        message =
+                            "Valor inválido."
+                    }
+                );
+            }
+
+            FraudRiskLevel riskLevel;
+
+            if (request.Amount > 10000)
+            {
+                riskLevel =
+                    FraudRiskLevel
+                        .HighRisk;
+            }
+            else if (
+                request.Amount > 5000
+            )
+            {
+                riskLevel =
+                    FraudRiskLevel
+                        .Suspicious;
+            }
+            else
+            {
+                riskLevel =
+                    FraudRiskLevel
+                        .Safe;
+            }
+
+            Transaction transaction =
+                new Transaction
+                {
+                    Id =
+                        Guid.NewGuid(),
+
+                    SenderCpf =
+                        request.SenderCpf,
+
+                    ReceiverCpf =
+                        request.ReceiverCpf,
+
+                    Amount =
+                        request.Amount,
+
+                    Location =
+                        request.Location,
+
+                    Description =
+                        request.Description,
+
+                    RiskLevel =
+                        riskLevel,
+
+                    CreatedAt =
+                        DateTime.Now
+                };
+
+            TransactionRepository
+                .Transactions
+                .Add(
+                    transaction
+                );
 
             return Ok(
                 new
                 {
                     message =
-                        "Transação processada.",
+                        "Transação criada.",
 
-                    fraud =
-                        transaction.IsFraud,
+                    classification =
+                        riskLevel
+                            .ToString(),
 
-                    riskLevel =
-                        transaction.RiskLevel,
-
-                    reason =
-                        transaction.FraudReason
+                    transaction
                 }
             );
-        }
-
-        private void AnalyzeTransaction(
-            TransactionRecord transaction
-        )
-        {
-            int riskScore = 0;
-
-            List<string> reasons =
-                new();
-
-            if (
-                transaction.Amount >= 10000
-            )
-            {
-                riskScore += 50;
-
-                reasons.Add(
-                    "Valor elevado"
-                );
-            }
-
-            int hour =
-                transaction.Date.Hour;
-
-            if (
-                hour >= 0 &&
-                hour <= 5
-            )
-            {
-                riskScore += 30;
-
-                reasons.Add(
-                    "Horário suspeito"
-                );
-            }
-
-            int recentTransactions =
-                transactions.Count(
-                    t =>
-                        t.SenderCpf ==
-                            transaction
-                                .SenderCpf &&
-
-                        (
-                            transaction.Date -
-                            t.Date
-                        ).TotalMinutes <= 2
-                );
-
-            if (
-                recentTransactions >= 3
-            )
-            {
-                riskScore += 40;
-
-                reasons.Add(
-                    "Múltiplas transações consecutivas"
-                );
-            }
-
-            if (riskScore >= 70)
-            {
-                transaction.IsFraud =
-                    true;
-
-                transaction.RiskLevel =
-                    "HIGH RISK";
-            }
-            else if (riskScore >= 40)
-            {
-                transaction.IsFraud =
-                    true;
-
-                transaction.RiskLevel =
-                    "SUSPICIOUS";
-            }
-            else
-            {
-                transaction.IsFraud =
-                    false;
-
-                transaction.RiskLevel =
-                    "SAFE";
-            }
-
-            transaction.FraudReason =
-                string.Join(
-                    ", ",
-                    reasons
-                );
         }
     }
 }

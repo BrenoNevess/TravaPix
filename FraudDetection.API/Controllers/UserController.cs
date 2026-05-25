@@ -1,19 +1,33 @@
 using Microsoft.AspNetCore.Mvc;
 
+using FraudDetection.API.DTOs;
 using FraudDetection.API.Models;
+using FraudDetection.API.Repositories;
 
 namespace FraudDetection.API.Controllers
 {
     [ApiController]
-    [Route("api/users")]
+
+    [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private static List<User> users =
-            new List<User>();
-
         [HttpGet]
-        public IActionResult GetUsers()
+        public IActionResult GetAll()
         {
+            List<UserResponse> users =
+                UserRepository.Users
+                    .Select(
+                        u => new UserResponse
+                        {
+                            Id = u.Id,
+                            Name = u.Name,
+                            Cpf = u.Cpf,
+                            Email = u.Email,
+                            Role = u.Role
+                        }
+                    )
+                    .ToList();
+
             return Ok(users);
         }
 
@@ -23,89 +37,81 @@ namespace FraudDetection.API.Controllers
         )
         {
             User? user =
-                users.FirstOrDefault(
-                    u => u.Cpf == cpf
-                );
+                UserRepository.Users
+                    .FirstOrDefault(
+                        u => u.Cpf == cpf
+                    );
 
             if (user == null)
             {
-                return NotFound(
-                    new
-                    {
-                        message =
-                            "Usuário não encontrado."
-                    }
-                );
+                return NotFound();
             }
+
+            UserResponse response =
+                new UserResponse
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    Cpf = user.Cpf,
+                    Email = user.Email,
+                    Role = user.Role
+                };
+
+            return Ok(response);
+        }
+
+        [HttpPost]
+        public IActionResult Create(
+            RegisterRequest request
+        )
+        {
+            User user = new User
+            {
+                Id = Guid.NewGuid(),
+
+                Name = request.Name,
+
+                Cpf = request.Cpf,
+
+                Email = request.Email,
+
+                Password = request.Password,
+
+                Role = "USER"
+            };
+
+            UserRepository.Users.Add(
+                user
+            );
 
             return Ok(user);
         }
 
-        [HttpPost]
-        public IActionResult CreateUser(
-            [FromBody] User user
-        )
-        {
-            bool alreadyExists =
-                users.Any(
-                    u => u.Cpf == user.Cpf
-                );
-
-            if (alreadyExists)
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "CPF já cadastrado."
-                    }
-                );
-            }
-
-            users.Add(user);
-
-            return Ok(
-                new
-                {
-                    message =
-                        "Usuário criado com sucesso."
-                }
-            );
-        }
-
         [HttpPut("{cpf}")]
-        public IActionResult UpdateUser(
+        public IActionResult Update(
             string cpf,
-            [FromBody] User updatedUser
+            RegisterRequest request
         )
         {
-            User? existingUser =
-                users.FirstOrDefault(
-                    u => u.Cpf == cpf
-                );
+            User? user =
+                UserRepository.Users
+                    .FirstOrDefault(
+                        u => u.Cpf == cpf
+                    );
 
-            if (existingUser == null)
+            if (user == null)
             {
-                return NotFound(
-                    new
-                    {
-                        message =
-                            "Usuário não encontrado."
-                    }
-                );
+                return NotFound();
             }
 
-            existingUser.Name =
-                updatedUser.Name;
+            user.Name =
+                request.Name;
 
-            existingUser.Email =
-                updatedUser.Email;
+            user.Email =
+                request.Email;
 
-            existingUser.Password =
-                updatedUser.Password;
-
-            existingUser.Role =
-                updatedUser.Role;
+            user.Password =
+                request.Password;
 
             return Ok(
                 new
@@ -117,27 +123,24 @@ namespace FraudDetection.API.Controllers
         }
 
         [HttpDelete("{cpf}")]
-        public IActionResult DeleteUser(
+        public IActionResult Delete(
             string cpf
         )
         {
             User? user =
-                users.FirstOrDefault(
-                    u => u.Cpf == cpf
-                );
+                UserRepository.Users
+                    .FirstOrDefault(
+                        u => u.Cpf == cpf
+                    );
 
             if (user == null)
             {
-                return NotFound(
-                    new
-                    {
-                        message =
-                            "Usuário não encontrado."
-                    }
-                );
+                return NotFound();
             }
 
-            users.Remove(user);
+            UserRepository.Users.Remove(
+                user
+            );
 
             return Ok(
                 new

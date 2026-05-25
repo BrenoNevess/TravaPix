@@ -1,131 +1,91 @@
 using System;
 using System.Linq;
 
-using FraudDetection.Models;
 using FraudDetection.Core;
+using FraudDetection.Models;
 
 namespace FraudDetection.Services
 {
     public static class FraudDetectionService
     {
-        public static FraudAnalysisResult AnalyzeTransaction(
+        public static FraudRiskLevel AnalyzeRisk(
             TransactionRecord transaction
         )
         {
-            int riskScore = 0;
-
-            string reason = "";
-
-            /*Valor elevado*/
-
-            if (transaction.Amount >= 5000)
-            {
-                riskScore += 40;
-
-                reason +=
-                    "Valor elevado detectado. ";
-            }
-
-            /*localização suspeita*/
-
-            string location =
-                transaction.Location
-                    .ToLower();
-
             if (
-                location.Contains("russia") ||
-
-                location.Contains("china") ||
-
-                location.Contains("unknown")
+                transaction.Amount >=
+                10000
             )
             {
-                riskScore += 30;
-
-                reason +=
-                    "Localização suspeita. ";
+                return FraudRiskLevel
+                    .HighRisk;
             }
 
-            /*Horario suspeito*/
-
-            int hour =
+            int suspiciousHour =
                 transaction.Date.Hour;
 
             if (
-                hour >= 0 &&
-                hour <= 5
+                suspiciousHour <= 5
+                ||
+                suspiciousHour >= 23
             )
             {
-                riskScore += 20;
-
-                reason +=
-                    "Horário suspeito. ";
+                return FraudRiskLevel
+                    .Suspicious;
             }
 
-            /*Múltiplas transações consecutivas*/
-
             int recentTransactions =
-                DataStore.Transactions.Count(
-                    t =>
-                        t.SenderCpf ==
-                            transaction.SenderCpf &&
-
-                        (
-                            transaction.Date -
-                            t.Date
-                        ).TotalMinutes <= 2
-                );
+                DataStore.Transactions
+                    .Count(
+                        t =>
+                            t.SenderCpf ==
+                                transaction
+                                    .SenderCpf
+                            &&
+                            (
+                                transaction.Date
+                                -
+                                t.Date
+                            ).TotalMinutes
+                            <= 2
+                    );
 
             if (recentTransactions >= 3)
             {
-                riskScore += 30;
-
-                reason +=
-                    "Múltiplas transações consecutivas. ";
+                return FraudRiskLevel
+                    .HighRisk;
             }
 
-            /*Classificação*/
-
-            string riskLevel =
-                "SEGURO";
-
-            bool isFraud = false;
-
-            if (riskScore >= 70)
+            if (
+                transaction.Amount >=
+                5000
+            )
             {
-                riskLevel =
-                    "ALTO RISCO";
-
-                isFraud = true;
-            }
-            else if (riskScore >= 40)
-            {
-                riskLevel =
-                    "SUSPEITO";
-
-                isFraud = true;
+                return FraudRiskLevel
+                    .Suspicious;
             }
 
-            /* ALERTA */
+            return FraudRiskLevel
+                .Safe;
+        }
 
-            if (isFraud)
-            {
-                AlertService.SendAlert(
-                    transaction,
-                    riskLevel
+        public static bool AnalyzeTransaction(
+            TransactionRecord transaction
+        )
+        {
+            FraudRiskLevel risk =
+                AnalyzeRisk(
+                    transaction
                 );
-            }
 
-            return new FraudAnalysisResult
-            {
-                IsFraud = isFraud,
-
-                RiskScore = riskScore,
-
-                RiskLevel = riskLevel,
-
-                Reason = reason
-            };
+            return
+                risk ==
+                    FraudRiskLevel
+                        .Suspicious
+                ||
+                risk ==
+                    FraudRiskLevel
+                        .HighRisk;
         }
     }
 }

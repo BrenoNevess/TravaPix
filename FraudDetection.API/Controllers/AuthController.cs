@@ -33,6 +33,22 @@ namespace FraudDetection.API.Controllers
                 );
             }
 
+            bool emailExists =
+                UserRepository.Users.Any(
+                    u => u.Email == request.Email
+                );
+
+            if (emailExists)
+            {
+                return BadRequest(
+                    new
+                    {
+                        message =
+                            "Email já cadastrado."
+                    }
+                );
+            }
+
             bool validPassword =
                 PasswordValidator.Validate(
                     request.Password,
@@ -52,30 +68,58 @@ namespace FraudDetection.API.Controllers
                 );
             }
 
-            User user = new User
-            {
-                Id = Guid.NewGuid(),
+            User user =
+                new User
+                {
+                    Id =
+                        Guid.NewGuid(),
 
-                Name = request.Name,
+                    Name =
+                        request.Name,
 
-                Cpf = request.Cpf,
+                    Cpf =
+                        request.Cpf,
 
-                Email = request.Email,
+                    Email =
+                        request.Email,
 
-                Password = request.Password,
+                    Password =
+                        request.Password,
 
-                Role = "USER"
-            };
+                    Role =
+                        "USER"
+                };
 
             UserRepository.Users.Add(
                 user
             );
 
+            UserResponse response =
+                new UserResponse
+                {
+                    Id =
+                        user.Id,
+
+                    Name =
+                        user.Name,
+
+                    Cpf =
+                        user.Cpf,
+
+                    Email =
+                        user.Email,
+
+                    Role =
+                        user.Role
+                };
+
             return Ok(
                 new
                 {
                     message =
-                        "Usuário cadastrado com sucesso."
+                        "Usuário cadastrado com sucesso.",
+
+                    user = response
                 }
             );
         }
@@ -90,7 +134,8 @@ namespace FraudDetection.API.Controllers
                     .FirstOrDefault(
                         u =>
                             u.Cpf ==
-                                request.Cpf &&
+                                request.Cpf
+                            &&
                             u.Password ==
                                 request.Password
                     );
@@ -106,17 +151,32 @@ namespace FraudDetection.API.Controllers
                 );
             }
 
+            UserResponse response =
+                new UserResponse
+                {
+                    Id =
+                        user.Id,
+
+                    Name =
+                        user.Name,
+
+                    Cpf =
+                        user.Cpf,
+
+                    Email =
+                        user.Email,
+
+                    Role =
+                        user.Role
+                };
+
             return Ok(
                 new
                 {
                     message =
-                        "Login realizado.",
+                        "Login realizado com sucesso.",
 
-                    user.Name,
-
-                    user.Cpf,
-
-                    user.Role
+                    user = response
                 }
             );
         }

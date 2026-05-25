@@ -1,4 +1,4 @@
-namespace FraudDetection.Models
+namespace FraudDetection.API.Models
 {
     public enum FraudRiskLevel
     {
