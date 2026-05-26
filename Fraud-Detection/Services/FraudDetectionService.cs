@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 
 using FraudDetection.Core;
@@ -8,31 +7,50 @@ namespace FraudDetection.Services
 {
     public static class FraudDetectionService
     {
-        public static FraudRiskLevel AnalyzeRisk(
-            TransactionRecord transaction
-        )
+        public static FraudAnalysisResult
+            AnalyzeTransaction(
+                TransactionRecord transaction
+            )
         {
+            int score = 0;
+
+            string reason = "";
+
+            /*
+             VALOR ALTO
+            */
+
             if (
-                transaction.Amount >=
-                10000
+                transaction.Amount >= 10000
             )
             {
-                return FraudRiskLevel
-                    .HighRisk;
+                score += 70;
+
+                reason +=
+                    "Valor elevado. ";
             }
 
-            int suspiciousHour =
+            /*
+             HORÁRIO SUSPEITO
+            */
+
+            int hour =
                 transaction.Date.Hour;
 
             if (
-                suspiciousHour <= 5
-                ||
-                suspiciousHour >= 23
+                hour <= 5 ||
+                hour >= 23
             )
             {
-                return FraudRiskLevel
-                    .Suspicious;
+                score += 20;
+
+                reason +=
+                    "Horário suspeito. ";
             }
+
+            /*
+             MÚLTIPLAS TRANSAÇÕES
+            */
 
             int recentTransactions =
                 DataStore.Transactions
@@ -52,40 +70,51 @@ namespace FraudDetection.Services
 
             if (recentTransactions >= 3)
             {
-                return FraudRiskLevel
-                    .HighRisk;
+                score += 40;
+
+                reason +=
+                    "Múltiplas transações consecutivas.";
             }
 
-            if (
-                transaction.Amount >=
-                5000
-            )
+            FraudRiskLevel level =
+                FraudRiskLevel.Safe;
+
+            if (score >= 80)
             {
-                return FraudRiskLevel
-                    .Suspicious;
+                level =
+                    FraudRiskLevel.HighRisk;
+            }
+            else if (score >= 40)
+            {
+                level =
+                    FraudRiskLevel.Suspicious;
             }
 
-            return FraudRiskLevel
-                .Safe;
-        }
+            return new FraudAnalysisResult
+            {
+                RiskScore =
+                    score,
 
-        public static bool AnalyzeTransaction(
-            TransactionRecord transaction
-        )
-        {
-            FraudRiskLevel risk =
-                AnalyzeRisk(
-                    transaction
-                );
+                RiskLevel =
+                    level,
 
-            return
-                risk ==
-                    FraudRiskLevel
-                        .Suspicious
-                ||
-                risk ==
-                    FraudRiskLevel
-                        .HighRisk;
+                IsFraud =
+                    level !=
+                        FraudRiskLevel
+                            .Safe,
+
+                Reason =
+                    string.IsNullOrWhiteSpace(
+                        reason
+                    )
+                    ?
+
+                    "Transação segura."
+
+                    :
+
+                    reason
+            };
         }
     }
 }

@@ -9,24 +9,25 @@ namespace FraudDetection.API.Controllers
     [ApiController]
 
     [Route("api/[controller]")]
-    public class UserController : ControllerBase
+    public class UserController
+        : ControllerBase
     {
         [HttpGet]
         public IActionResult GetAll()
         {
             List<UserResponse> users =
                 UserRepository.Users
-                    .Select(
-                        u => new UserResponse
+                .Select(
+                    u =>
+                        new UserResponse
                         {
-                            Id = u.Id,
                             Name = u.Name,
                             Cpf = u.Cpf,
                             Email = u.Email,
                             Role = u.Role
                         }
-                    )
-                    .ToList();
+                )
+                .ToList();
 
             return Ok(users);
         }
@@ -38,26 +39,26 @@ namespace FraudDetection.API.Controllers
         {
             User? user =
                 UserRepository.Users
-                    .FirstOrDefault(
-                        u => u.Cpf == cpf
-                    );
+                .FirstOrDefault(
+                    u => u.Cpf == cpf
+                );
 
             if (user == null)
             {
-                return NotFound();
+                throw new ArgumentException(
+                    "Usuário não encontrado."
+                );
             }
 
-            UserResponse response =
+            return Ok(
                 new UserResponse
                 {
-                    Id = user.Id,
                     Name = user.Name,
                     Cpf = user.Cpf,
                     Email = user.Email,
                     Role = user.Role
-                };
-
-            return Ok(response);
+                }
+            );
         }
 
         [HttpPost]
@@ -65,26 +66,46 @@ namespace FraudDetection.API.Controllers
             RegisterRequest request
         )
         {
-            User user = new User
+            bool exists =
+                UserRepository.Users.Any(
+                    u => u.Cpf == request.Cpf
+                );
+
+            if (exists)
             {
-                Id = Guid.NewGuid(),
+                throw new ArgumentException(
+                    "CPF já existe."
+                );
+            }
 
-                Name = request.Name,
+            User user =
+                new User
+                {
+                    Id = Guid.NewGuid(),
 
-                Cpf = request.Cpf,
+                    Name = request.Name,
 
-                Email = request.Email,
+                    Cpf = request.Cpf,
 
-                Password = request.Password,
+                    Email = request.Email,
 
-                Role = "USER"
-            };
+                    Password =
+                        request.Password,
+
+                    Role = "USER"
+                };
 
             UserRepository.Users.Add(
                 user
             );
 
-            return Ok(user);
+            return Ok(
+                new
+                {
+                    message =
+                        "Usuário criado."
+                }
+            );
         }
 
         [HttpPut("{cpf}")]
@@ -95,13 +116,15 @@ namespace FraudDetection.API.Controllers
         {
             User? user =
                 UserRepository.Users
-                    .FirstOrDefault(
-                        u => u.Cpf == cpf
-                    );
+                .FirstOrDefault(
+                    u => u.Cpf == cpf
+                );
 
             if (user == null)
             {
-                return NotFound();
+                throw new ArgumentException(
+                    "Usuário não encontrado."
+                );
             }
 
             user.Name =
@@ -129,13 +152,15 @@ namespace FraudDetection.API.Controllers
         {
             User? user =
                 UserRepository.Users
-                    .FirstOrDefault(
-                        u => u.Cpf == cpf
-                    );
+                .FirstOrDefault(
+                    u => u.Cpf == cpf
+                );
 
             if (user == null)
             {
-                return NotFound();
+                throw new ArgumentException(
+                    "Usuário não encontrado."
+                );
             }
 
             UserRepository.Users.Remove(

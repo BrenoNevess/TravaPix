@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using FraudDetection.API.DTOs;
 using FraudDetection.API.Models;
 using FraudDetection.API.Repositories;
+using FraudDetection.API.Services;
 
 namespace FraudDetection.API.Controllers
 {
@@ -26,66 +27,32 @@ namespace FraudDetection.API.Controllers
             TransactionRequest request
         )
         {
-            if (
-                string.IsNullOrWhiteSpace(
-                    request.SenderCpf
-                )
-                ||
-                string.IsNullOrWhiteSpace(
-                    request.ReceiverCpf
-                )
-            )
+            if (request.Amount <= 0)
             {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "CPF obrigatório."
-                    }
+                throw new ArgumentException(
+                    "Valor inválido."
                 );
             }
 
-            if (
-                request.Amount <= 0
-            )
-            {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Valor inválido."
-                    }
+            FraudDetectionService service =
+                new FraudDetectionService();
+
+            FraudAnalysisResult analysis =
+                service.AnalyzeTransaction(
+                    request.Amount,
+                    DateTime.Now
                 );
-            }
 
-            FraudRiskLevel riskLevel;
-
-            if (request.Amount > 10000)
-            {
-                riskLevel =
-                    FraudRiskLevel
-                        .HighRisk;
-            }
-            else if (
-                request.Amount > 5000
-            )
-            {
-                riskLevel =
-                    FraudRiskLevel
-                        .Suspicious;
-            }
-            else
-            {
-                riskLevel =
-                    FraudRiskLevel
-                        .Safe;
-            }
+            Enum.TryParse<FraudRiskLevel>(
+                analysis.RiskLevel,
+                true,
+                out FraudRiskLevel parsedRisk
+            );
 
             Transaction transaction =
                 new Transaction
                 {
-                    Id =
-                        Guid.NewGuid(),
+                    Id = Guid.NewGuid(),
 
                     SenderCpf =
                         request.SenderCpf,
@@ -103,7 +70,7 @@ namespace FraudDetection.API.Controllers
                         request.Description,
 
                     RiskLevel =
-                        riskLevel,
+                        parsedRisk,
 
                     CreatedAt =
                         DateTime.Now
@@ -111,9 +78,7 @@ namespace FraudDetection.API.Controllers
 
             TransactionRepository
                 .Transactions
-                .Add(
-                    transaction
-                );
+                .Add(transaction);
 
             return Ok(
                 new
@@ -121,9 +86,8 @@ namespace FraudDetection.API.Controllers
                     message =
                         "Transação criada.",
 
-                    classification =
-                        riskLevel
-                            .ToString(),
+                    riskLevel =
+                        analysis.RiskLevel,
 
                     transaction
                 }

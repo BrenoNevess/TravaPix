@@ -2,21 +2,12 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-using FraudDetection.Models;
-using FraudDetection.Core;
 using FraudDetection.Services;
-using FraudDetection.Repositories;
 
 namespace FraudDetection.Interface.Forms
 {
     public class TransactionForm : Form
     {
-        private readonly FakeTransactionRepository
-            transactionRepository = new();
-
-        private readonly FakeFraudRepository
-            fraudRepository = new();
-
         private TextBox txtSenderCpf = null!;
         private TextBox txtReceiverCpf = null!;
         private TextBox txtAmount = null!;
@@ -24,6 +15,9 @@ namespace FraudDetection.Interface.Forms
         private TextBox txtDescription = null!;
 
         private Button btnProcess = null!;
+
+        private readonly ApiService
+            apiService = new();
 
         public TransactionForm()
         {
@@ -35,39 +29,63 @@ namespace FraudDetection.Interface.Forms
             AutoScroll = true;
 
             BackColor =
-                Color.FromArgb(18, 18, 18);
+                Color.FromArgb(18,18,18);
 
-            Panel container = new Panel
-            {
-                Size = new Size(850, 700),
+            Panel container =
+                new Panel
+                {
+                    Size =
+                        new Size(
+                            850,
+                            700
+                        ),
 
-                BackColor =
-                    Color.FromArgb(28, 28, 28)
-            };
+                    BackColor =
+                        Color.FromArgb(
+                            28,
+                            28,
+                            28
+                        )
+                };
 
-            Controls.Add(container);
+            Controls.Add(
+                container
+            );
 
             container.Location =
-                new Point(400, 100);
+                new Point(
+                    400,
+                    100
+                );
 
-            Label lblTitle = new Label
-            {
-                Text = "NOVA TRANSAÇÃO",
+            Label lblTitle =
+                new Label
+                {
+                    Text =
+                        "NOVA TRANSAÇÃO",
 
-                ForeColor = Color.White,
+                    ForeColor =
+                        Color.White,
 
-                Font = new Font(
-                    "Segoe UI",
-                    24,
-                    FontStyle.Bold
-                ),
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            24,
+                            FontStyle.Bold
+                        ),
 
-                AutoSize = true,
+                    AutoSize = true,
 
-                Location = new Point(230, 30)
-            };
+                    Location =
+                        new Point(
+                            230,
+                            30
+                        )
+                };
 
-            container.Controls.Add(lblTitle);
+            container.Controls.Add(
+                lblTitle
+            );
 
             txtSenderCpf =
                 CreateTextBox(
@@ -119,40 +137,44 @@ namespace FraudDetection.Interface.Forms
                 txtDescription
             );
 
-            btnProcess = new Button
-            {
-                Text =
-                    "Processar Transação",
+            btnProcess =
+                new Button
+                {
+                    Text =
+                        "Processar Transação",
 
-                Size = new Size(500, 45),
+                    Size =
+                        new Size(
+                            500,
+                            45
+                        ),
 
-                Location =
-                    new Point(170, 600),
+                    Location =
+                        new Point(
+                            170,
+                            600
+                        ),
 
-                FlatStyle =
-                    FlatStyle.Flat,
+                    FlatStyle =
+                        FlatStyle.Flat,
 
-                BackColor =
-                    Color.FromArgb(
-                        0,
-                        120,
-                        215
-                    ),
+                    BackColor =
+                        Color.FromArgb(
+                            0,
+                            120,
+                            215
+                        ),
 
-                ForeColor = Color.White,
+                    ForeColor =
+                        Color.White,
 
-                Font = new Font(
-                    "Segoe UI",
-                    11,
-                    FontStyle.Bold
-                ),
-
-                Cursor = Cursors.Hand
-            };
-
-            btnProcess
-                .FlatAppearance
-                .BorderSize = 0;
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            11,
+                            FontStyle.Bold
+                        )
+                };
 
             btnProcess.Click +=
                 BtnProcess_Click;
@@ -167,221 +189,135 @@ namespace FraudDetection.Interface.Forms
             int y
         )
         {
-            TextBox txt = new TextBox
-            {
-                Size = new Size(500, 40),
-
-                Location =
-                    new Point(170, y),
-
-                BackColor =
-                    Color.FromArgb(
-                        40,
-                        40,
-                        40
-                    ),
-
-                ForeColor = Color.White,
-
-                BorderStyle =
-                    BorderStyle.FixedSingle,
-
-                Font = new Font(
-                    "Segoe UI",
-                    11
-                ),
-
-                Text = placeholder
-            };
-
-            txt.GotFocus += (s, e) =>
-            {
-                if (txt.Text == placeholder)
+            TextBox txt =
+                new TextBox
                 {
-                    txt.Text = "";
-                }
-            };
+                    Size =
+                        new Size(
+                            500,
+                            40
+                        ),
 
-            txt.LostFocus += (s, e) =>
-            {
-                if (
-                    string.IsNullOrWhiteSpace(
+                    Location =
+                        new Point(
+                            170,
+                            y
+                        ),
+
+                    BackColor =
+                        Color.FromArgb(
+                            40,
+                            40,
+                            40
+                        ),
+
+                    ForeColor =
+                        Color.White,
+
+                    BorderStyle =
+                        BorderStyle.FixedSingle,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            11
+                        ),
+
+                    Text =
+                        placeholder
+                };
+
+            txt.GotFocus +=
+                (s,e)=>
+                {
+                    if(
                         txt.Text
+                        ==
+                        placeholder
                     )
-                )
+                    {
+                        txt.Text="";
+                    }
+                };
+
+            txt.LostFocus +=
+                (s,e)=>
                 {
-                    txt.Text = placeholder;
-                }
-            };
+                    if(
+                        string.IsNullOrWhiteSpace(
+                            txt.Text
+                        )
+                    )
+                    {
+                        txt.Text=
+                            placeholder;
+                    }
+                };
 
             return txt;
         }
 
-        private void BtnProcess_Click(
+        private async void BtnProcess_Click(
             object? sender,
             EventArgs e
         )
         {
-            if (
-                txtSenderCpf.Text ==
-                    "CPF Remetente" ||
-
-                txtReceiverCpf.Text ==
-                    "CPF Destinatário" ||
-
-                txtAmount.Text ==
-                    "Valor da Transação"
-            )
-            {
-                MessageBox.Show(
-                    "Preencha os campos obrigatórios.",
-
-                    "Erro",
-
-                    MessageBoxButtons.OK,
-
-                    MessageBoxIcon.Warning
-                );
-
-                return;
-            }
-
             bool validAmount =
                 decimal.TryParse(
                     txtAmount.Text,
                     out decimal amount
                 );
 
-            if (!validAmount)
+            if(!validAmount)
             {
                 MessageBox.Show(
-                    "Valor inválido.",
-
-                    "Erro",
-
-                    MessageBoxButtons.OK,
-
-                    MessageBoxIcon.Warning
+                    "Valor inválido."
                 );
 
                 return;
             }
 
-            TransactionRecord transaction =
-                new TransactionRecord
+            var request =
+                new
                 {
-                    Id = Guid.NewGuid(),
-
                     SenderCpf =
                         txtSenderCpf.Text,
 
                     ReceiverCpf =
                         txtReceiverCpf.Text,
 
-                    Amount = amount,
+                    Amount =
+                        amount,
 
                     Location =
                         txtLocation.Text,
 
                     Description =
-                        txtDescription.Text,
-
-                    Date = DateTime.Now
+                        txtDescription.Text
                 };
 
-            /*
-             * ANÁLISE DE FRAUDE
-             */
-
-            FraudAnalysisResult analysis =
-                FraudDetectionService
-                    .AnalyzeTransaction(
-                        transaction
-                    );
-
-            transaction.RiskScore =
-                analysis.RiskScore;
-
-            transaction.RiskLevel =
-                analysis.RiskLevel;
-
-            transaction.IsFraud =
-                analysis.IsFraud;
-
-            /*
-             * SALVA TRANSAÇÃO
-             */
-
-            transactionRepository.Add(
-                transaction
-            );
-
-            /*
-             * SALVA FRAUDE
-             */
-
-            if (analysis.IsFraud)
+            try
             {
-                FraudRecord fraud =
-                    new FraudRecord
-                    {
-                        Id = Guid.NewGuid(),
+                string response =
+                    await apiService
+                        .CreateTransaction(
+                            request
+                        );
 
-                        SenderCpf =
-                            transaction.SenderCpf,
+                MessageBox.Show(
+                    response,
+                    "Resposta API"
+                );
 
-                        ReceiverCpf =
-                            transaction.ReceiverCpf,
-
-                        Amount =
-                            transaction.Amount,
-
-                        Location =
-                            transaction.Location,
-
-                        Date =
-                            transaction.Date,
-
-                        Reason =
-                            analysis.Reason,
-
-                        RiskScore =
-                            analysis.RiskScore,
-
-                        RiskLevel =
-                            analysis.RiskLevel
-                    };
-
-                fraudRepository.Add(
-                    fraud
+                ClearFields();
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Erro"
                 );
             }
-
-            /*
-             * EVENTO GLOBAL
-             */
-
-            EventBus.NotifyDataChanged();
-
-            /*
-             * RESULTADO
-             */
-
-            MessageBox.Show(
-                $"Nível: {analysis.RiskLevel}\n" +
-                $"Score: {analysis.RiskScore}\n\n" +
-                $"{analysis.Reason}",
-
-                "Resultado da Análise",
-
-                MessageBoxButtons.OK,
-
-                analysis.IsFraud
-                    ? MessageBoxIcon.Warning
-                    : MessageBoxIcon.Information
-            );
-
-            ClearFields();
         }
 
         private void ClearFields()

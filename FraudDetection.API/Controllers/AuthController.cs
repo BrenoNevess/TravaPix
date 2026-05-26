@@ -10,7 +10,8 @@ namespace FraudDetection.API.Controllers
     [ApiController]
 
     [Route("api/[controller]")]
-    public class AuthController : ControllerBase
+    public class AuthController
+        : ControllerBase
     {
         [HttpPost("register")]
         public IActionResult Register(
@@ -24,12 +25,8 @@ namespace FraudDetection.API.Controllers
 
             if (cpfExists)
             {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "CPF já cadastrado."
-                    }
+                throw new ArgumentException(
+                    "CPF já cadastrado."
                 );
             }
 
@@ -40,12 +37,8 @@ namespace FraudDetection.API.Controllers
 
             if (emailExists)
             {
-                return BadRequest(
-                    new
-                    {
-                        message =
-                            "Email já cadastrado."
-                    }
+                throw new ArgumentException(
+                    "Email já cadastrado."
                 );
             }
 
@@ -60,66 +53,35 @@ namespace FraudDetection.API.Controllers
 
             if (!validPassword)
             {
-                return BadRequest(
-                    new
-                    {
-                        message = error
-                    }
+                throw new ArgumentException(
+                    error
                 );
             }
 
-            User user =
-                new User
-                {
-                    Id =
-                        Guid.NewGuid(),
+            User user = new User
+            {
+                Id = Guid.NewGuid(),
 
-                    Name =
-                        request.Name,
+                Name = request.Name,
 
-                    Cpf =
-                        request.Cpf,
+                Cpf = request.Cpf,
 
-                    Email =
-                        request.Email,
+                Email = request.Email,
 
-                    Password =
-                        request.Password,
+                Password = request.Password,
 
-                    Role =
-                        "USER"
-                };
+                Role = "USER"
+            };
 
             UserRepository.Users.Add(
                 user
             );
 
-            UserResponse response =
-                new UserResponse
-                {
-                    Id =
-                        user.Id,
-
-                    Name =
-                        user.Name,
-
-                    Cpf =
-                        user.Cpf,
-
-                    Email =
-                        user.Email,
-
-                    Role =
-                        user.Role
-                };
-
             return Ok(
                 new
                 {
                     message =
-                        "Usuário cadastrado com sucesso.",
-
-                    user = response
+                        "Usuário criado com sucesso."
                 }
             );
         }
@@ -134,49 +96,29 @@ namespace FraudDetection.API.Controllers
                     .FirstOrDefault(
                         u =>
                             u.Cpf ==
-                                request.Cpf
-                            &&
+                                request.Cpf &&
                             u.Password ==
                                 request.Password
                     );
 
             if (user == null)
             {
-                return Unauthorized(
-                    new
-                    {
-                        message =
-                            "CPF ou senha inválidos."
-                    }
+                throw new UnauthorizedAccessException(
+                    "CPF ou senha inválidos."
                 );
             }
-
-            UserResponse response =
-                new UserResponse
-                {
-                    Id =
-                        user.Id,
-
-                    Name =
-                        user.Name,
-
-                    Cpf =
-                        user.Cpf,
-
-                    Email =
-                        user.Email,
-
-                    Role =
-                        user.Role
-                };
 
             return Ok(
                 new
                 {
                     message =
-                        "Login realizado com sucesso.",
+                        "Login realizado.",
 
-                    user = response
+                    user.Name,
+
+                    user.Cpf,
+
+                    user.Role
                 }
             );
         }

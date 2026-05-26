@@ -2,8 +2,6 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-using FraudDetection.Models;
-using FraudDetection.Repositories;
 using FraudDetection.Services;
 
 namespace FraudDetection.Forms
@@ -15,22 +13,13 @@ namespace FraudDetection.Forms
         private TextBox txtEmail = null!;
         private TextBox txtPassword = null!;
 
-        private TextBox txtCardNumber = null!;
-        private TextBox txtCardCvv = null!;
-        private TextBox txtCardExpiry = null!;
-        private TextBox txtCardLimit = null!;
-
         private Button btnRegister = null!;
 
-        private readonly UserService userService;
+        private readonly ApiService
+            apiService = new();
 
         public RegisterForm()
         {
-            userService =
-                new UserService(
-                    new FakeUserRepository()
-                );
-
             InitializeRegister();
         }
 
@@ -39,135 +28,150 @@ namespace FraudDetection.Forms
             AutoScroll = true;
 
             BackColor =
-                Color.FromArgb(18, 18, 18);
+                Color.FromArgb(18,18,18);
 
-            Panel container = new Panel
-            {
-                Size = new Size(900, 850),
+            Panel container =
+                new Panel
+                {
+                    Size =
+                        new Size(
+                            900,
+                            700
+                        ),
 
-                BackColor =
-                    Color.FromArgb(28, 28, 28)
-            };
+                    BackColor =
+                        Color.FromArgb(
+                            28,
+                            28,
+                            28
+                        )
+                };
 
             Controls.Add(container);
 
             container.Location =
-                new Point(350, 40);
+                new Point(
+                    350,
+                    80
+                );
 
-            Label lblTitle = new Label
-            {
-                Text = "CADASTRO",
+            Label lblTitle =
+                new Label
+                {
+                    Text =
+                        "CADASTRO",
 
-                ForeColor = Color.White,
+                    ForeColor =
+                        Color.White,
 
-                Font = new Font(
-                    "Segoe UI",
-                    24,
-                    FontStyle.Bold
-                ),
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            24,
+                            FontStyle.Bold
+                        ),
 
-                AutoSize = true,
+                    AutoSize = true,
 
-                Location = new Point(320, 30)
-            };
+                    Location =
+                        new Point(
+                            320,
+                            30
+                        )
+                };
 
-            container.Controls.Add(lblTitle);
+            container.Controls.Add(
+                lblTitle
+            );
 
             txtName =
                 CreateTextBox(
                     "Nome Completo",
-                    120
+                    140
                 );
 
             txtCpf =
                 CreateTextBox(
                     "CPF",
-                    200
+                    230
                 );
 
             txtEmail =
                 CreateTextBox(
                     "Email",
-                    280
+                    320
                 );
 
             txtPassword =
                 CreateTextBox(
                     "Senha",
-                    360
+                    410
                 );
 
-            txtCardNumber =
-                CreateTextBox(
-                    "Número do Cartão",
-                    470
-                );
+            txtPassword.PasswordChar =
+                '*';
 
-            txtCardCvv =
-                CreateTextBox(
-                    "CVV",
-                    550
-                );
+            container.Controls.Add(
+                txtName
+            );
 
-            txtCardExpiry =
-                CreateTextBox(
-                    "Validade",
-                    630
-                );
+            container.Controls.Add(
+                txtCpf
+            );
 
-            txtCardLimit =
-                CreateTextBox(
-                    "Limite do Cartão",
-                    710
-                );
+            container.Controls.Add(
+                txtEmail
+            );
 
-            txtPassword.PasswordChar = '*';
+            container.Controls.Add(
+                txtPassword
+            );
 
-            container.Controls.Add(txtName);
+            btnRegister =
+                new Button
+                {
+                    Text =
+                        "Cadastrar",
 
-            container.Controls.Add(txtCpf);
+                    Size =
+                        new Size(
+                            500,
+                            45
+                        ),
 
-            container.Controls.Add(txtEmail);
+                    Location =
+                        new Point(
+                            200,
+                            540
+                        ),
 
-            container.Controls.Add(txtPassword);
+                    FlatStyle =
+                        FlatStyle.Flat,
 
-            container.Controls.Add(txtCardNumber);
+                    BackColor =
+                        Color.FromArgb(
+                            0,
+                            120,
+                            215
+                        ),
 
-            container.Controls.Add(txtCardCvv);
+                    ForeColor =
+                        Color.White,
 
-            container.Controls.Add(txtCardExpiry);
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            11,
+                            FontStyle.Bold
+                        )
+                };
 
-            container.Controls.Add(txtCardLimit);
+            btnRegister.Click +=
+                BtnRegister_Click;
 
-            btnRegister = new Button
-            {
-                Text = "Cadastrar",
-
-                Size = new Size(500, 45),
-
-                Location = new Point(200, 780),
-
-                FlatStyle = FlatStyle.Flat,
-
-                BackColor =
-                    Color.FromArgb(0, 120, 215),
-
-                ForeColor = Color.White,
-
-                Font = new Font(
-                    "Segoe UI",
-                    11,
-                    FontStyle.Bold
-                ),
-
-                Cursor = Cursors.Hand
-            };
-
-            btnRegister.FlatAppearance.BorderSize = 0;
-
-            btnRegister.Click += BtnRegister_Click;
-
-            container.Controls.Add(btnRegister);
+            container.Controls.Add(
+                btnRegister
+            );
         }
 
         private TextBox CreateTextBox(
@@ -175,129 +179,105 @@ namespace FraudDetection.Forms
             int y
         )
         {
-            TextBox txt = new TextBox
-            {
-                Size = new Size(500, 40),
-
-                Location = new Point(200, y),
-
-                BackColor =
-                    Color.FromArgb(40, 40, 40),
-
-                ForeColor = Color.White,
-
-                BorderStyle =
-                    BorderStyle.FixedSingle,
-
-                Font = new Font(
-                    "Segoe UI",
-                    11
-                ),
-
-                Text = placeholder
-            };
-
-            txt.GotFocus += (s, e) =>
-            {
-                if (txt.Text == placeholder)
+            TextBox txt =
+                new TextBox
                 {
-                    txt.Text = "";
-                }
-            };
+                    Size =
+                        new Size(
+                            500,
+                            40
+                        ),
 
-            txt.LostFocus += (s, e) =>
-            {
-                if (
-                    string.IsNullOrWhiteSpace(
+                    Location =
+                        new Point(
+                            200,
+                            y
+                        ),
+
+                    Text = placeholder,
+
+                    BackColor =
+                        Color.FromArgb(
+                            40,
+                            40,
+                            40
+                        ),
+
+                    ForeColor =
+                        Color.White
+                };
+
+            txt.GotFocus +=
+                (s,e)=>
+                {
+                    if(
                         txt.Text
+                        ==
+                        placeholder
                     )
-                )
+                    {
+                        txt.Text="";
+                    }
+                };
+
+            txt.LostFocus +=
+                (s,e)=>
                 {
-                    txt.Text = placeholder;
-                }
-            };
+                    if(
+                        string.IsNullOrWhiteSpace(
+                            txt.Text
+                        )
+                    )
+                    {
+                        txt.Text=
+                            placeholder;
+                    }
+                };
 
             return txt;
         }
 
-        private void BtnRegister_Click(
+        private async void BtnRegister_Click(
             object? sender,
             EventArgs e
         )
         {
-            Card card = new Card
+            var request =
+                new
+                {
+                    Name =
+                        txtName.Text,
+
+                    Cpf =
+                        txtCpf.Text,
+
+                    Email =
+                        txtEmail.Text,
+
+                    Password =
+                        txtPassword.Text
+                };
+
+            try
             {
-                Number =
-                    txtCardNumber.Text,
+                string response =
+                    await apiService
+                        .Register(
+                            request
+                        );
 
-                Cvv =
-                    txtCardCvv.Text,
-
-                ExpiryDate =
-                    txtCardExpiry.Text,
-
-                Limit =
-                    decimal.Parse(
-                        txtCardLimit.Text
-                    )
-            };
-
-            User user = new User
+                MessageBox.Show(
+                    response,
+                    "Cadastro"
+                );
+            }
+            catch(Exception ex)
             {
-                Name =
-                    txtName.Text,
-
-                Cpf =
-                    txtCpf.Text,
-
-                Email =
-                    txtEmail.Text,
-
-                Password =
-                    txtPassword.Text,
-
-                Role = "USER",
-
-                Card = card
-            };
-
-            userService.CreateUser(user);
-
-            MessageBox.Show(
-                "Usuário cadastrado com sucesso.",
-                "Cadastro",
-                MessageBoxButtons.OK,
-                MessageBoxIcon.Information
-            );
-
-            ClearFields();
-        }
-
-        private void ClearFields()
-        {
-            txtName.Text =
-                "Nome Completo";
-
-            txtCpf.Text =
-                "CPF";
-
-            txtEmail.Text =
-                "Email";
-
-            txtPassword.Text =
-                "Senha";
-
-            txtCardNumber.Text =
-                "Número do Cartão";
-
-            txtCardCvv.Text =
-                "CVV";
-
-            txtCardExpiry.Text =
-                "Validade";
-
-            txtCardLimit.Text =
-                "Limite do Cartão";
+                MessageBox.Show(
+                    ex.Message,
+                    "Erro"
+                );
+            }
         }
     }
 }
