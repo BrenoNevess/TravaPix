@@ -13,6 +13,11 @@ namespace FraudDetection.Forms
         private TextBox txtEmail = null!;
         private TextBox txtPassword = null!;
 
+        private TextBox txtCardNumber = null!;
+        private TextBox txtCvv = null!;
+        private TextBox txtExpiry = null!;
+        private TextBox txtLimit = null!;
+
         private Button btnRegister = null!;
 
         private readonly ApiService
@@ -28,7 +33,11 @@ namespace FraudDetection.Forms
             AutoScroll = true;
 
             BackColor =
-                Color.FromArgb(18,18,18);
+                Color.FromArgb(
+                    18,
+                    18,
+                    18
+                );
 
             Panel container =
                 new Panel
@@ -36,7 +45,7 @@ namespace FraudDetection.Forms
                     Size =
                         new Size(
                             900,
-                            700
+                            1100
                         ),
 
                     BackColor =
@@ -47,13 +56,19 @@ namespace FraudDetection.Forms
                         )
                 };
 
-            Controls.Add(container);
+            Controls.Add(
+                container
+            );
 
             container.Location =
                 new Point(
-                    350,
-                    80
+                    400,
+                    40
                 );
+
+            /*
+             * TITULO PRINCIPAL
+             */
 
             Label lblTitle =
                 new Label
@@ -75,8 +90,9 @@ namespace FraudDetection.Forms
 
                     Location =
                         new Point(
-                            320,
-                            30
+                            325,
+                            40
+                            
                         )
                 };
 
@@ -84,10 +100,41 @@ namespace FraudDetection.Forms
                 lblTitle
             );
 
+            /*Usuário*/
+
+            Label userSection =
+                new Label
+                {
+                    Text =
+                        "DADOS DO USUÁRIO",
+
+                    ForeColor =
+                        Color.DeepSkyBlue,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            16,
+                            FontStyle.Bold
+                        ),
+
+                    AutoSize = true,
+
+                    Location =
+                        new Point(
+                            305,
+                            100
+                        )
+                };
+
+            container.Controls.Add(
+                userSection
+            );
+
             txtName =
                 CreateTextBox(
                     "Nome Completo",
-                    140
+                    150
                 );
 
             txtCpf =
@@ -99,13 +146,13 @@ namespace FraudDetection.Forms
             txtEmail =
                 CreateTextBox(
                     "Email",
-                    320
+                    310
                 );
 
             txtPassword =
                 CreateTextBox(
                     "Senha",
-                    410
+                    390
                 );
 
             txtPassword.PasswordChar =
@@ -127,6 +174,104 @@ namespace FraudDetection.Forms
                 txtPassword
             );
 
+            /*Linha*/
+
+            Panel divider =
+                new Panel
+                {
+                    Size =
+                        new Size(
+                            650,
+                            2
+                        ),
+
+                    BackColor =
+                        Color.Gray,
+
+                    Location =
+                        new Point(
+                            120,
+                            470
+                        )
+                };
+
+            container.Controls.Add(
+                divider
+            );
+
+            /* Cartão */
+
+            Label cardSection =
+                new Label
+                {
+                    Text =
+                        "DADOS DO CARTÃO",
+
+                    ForeColor =
+                        Color.DeepSkyBlue,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            16,
+                            FontStyle.Bold
+                        ),
+
+                    AutoSize = true,
+
+                    Location =
+                        new Point(
+                            305,
+                            510
+                        )
+                };
+
+            container.Controls.Add(
+                cardSection
+            );
+
+            txtCardNumber =
+                CreateTextBox(
+                    "Número do Cartão",
+                    570
+                );
+
+            txtCvv =
+                CreateTextBox(
+                    "CVV",
+                    650
+                );
+
+            txtExpiry =
+                CreateTextBox(
+                    "MM/AA",
+                    730
+                );
+
+            txtLimit =
+                CreateTextBox(
+                    "Limite do Cartão",
+                    810
+                );
+
+            container.Controls.Add(
+                txtCardNumber
+            );
+
+            container.Controls.Add(
+                txtCvv
+            );
+
+            container.Controls.Add(
+                txtExpiry
+            );
+
+            container.Controls.Add(
+                txtLimit
+            );
+
+            /*Botão*/
+
             btnRegister =
                 new Button
                 {
@@ -142,7 +287,7 @@ namespace FraudDetection.Forms
                     Location =
                         new Point(
                             200,
-                            540
+                            920
                         ),
 
                     FlatStyle =
@@ -194,7 +339,8 @@ namespace FraudDetection.Forms
                             y
                         ),
 
-                    Text = placeholder,
+                    Text =
+                        placeholder,
 
                     BackColor =
                         Color.FromArgb(
@@ -204,7 +350,16 @@ namespace FraudDetection.Forms
                         ),
 
                     ForeColor =
-                        Color.White
+                        Color.White,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            11
+                        ),
+
+                    BorderStyle =
+                        BorderStyle.FixedSingle
                 };
 
             txt.GotFocus +=
@@ -229,7 +384,7 @@ namespace FraudDetection.Forms
                         )
                     )
                     {
-                        txt.Text=
+                        txt.Text =
                             placeholder;
                     }
                 };
@@ -242,6 +397,24 @@ namespace FraudDetection.Forms
             EventArgs e
         )
         {
+            bool validLimit =
+                decimal.TryParse(
+                    txtLimit.Text,
+                    out decimal limit
+                );
+
+            if(!validLimit)
+            {
+                MessageBox.Show(
+                    "Limite inválido.",
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
             var request =
                 new
                 {
@@ -255,7 +428,19 @@ namespace FraudDetection.Forms
                         txtEmail.Text,
 
                     Password =
-                        txtPassword.Text
+                        txtPassword.Text,
+
+                    CardNumber =
+                        txtCardNumber.Text,
+
+                    CardCvv =
+                        txtCvv.Text,
+
+                    ExpiryDate =
+                        txtExpiry.Text,
+
+                    CreditLimit =
+                        limit
                 };
 
             try
@@ -268,14 +453,18 @@ namespace FraudDetection.Forms
 
                 MessageBox.Show(
                     response,
-                    "Cadastro"
+                    "Cadastro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Information
                 );
             }
             catch(Exception ex)
             {
                 MessageBox.Show(
                     ex.Message,
-                    "Erro"
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
                 );
             }
         }

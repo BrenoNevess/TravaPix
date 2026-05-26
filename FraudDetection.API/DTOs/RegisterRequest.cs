@@ -9,5 +9,13 @@ namespace FraudDetection.API.DTOs
         public string Email { get; set; } = "";
 
         public string Password { get; set; } = "";
+
+        public string CardNumber { get; set; } = "";
+
+        public string CardCvv { get; set; } = "";
+
+        public string ExpiryDate { get; set; } = "";
+
+        public decimal CreditLimit { get; set; }
     }
 }
