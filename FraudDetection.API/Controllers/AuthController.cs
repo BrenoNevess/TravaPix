@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 
+using FraudDetection.API.Data;
 using FraudDetection.API.DTOs;
 using FraudDetection.API.Models;
-using FraudDetection.API.Repositories;
 using FraudDetection.API.Services;
 
 namespace FraudDetection.API.Controllers
@@ -13,31 +13,45 @@ namespace FraudDetection.API.Controllers
     public class AuthController
         : ControllerBase
     {
+        private readonly AppDbContext
+            _context;
+
+        public AuthController(
+            AppDbContext context
+        )
+        {
+            _context = context;
+        }
+
         [HttpPost("register")]
         public IActionResult Register(
             RegisterRequest request
         )
         {
             bool cpfExists =
-                UserRepository.Users.Any(
-                    u => u.Cpf == request.Cpf
+                _context.Users.Any(
+                    u =>
+                        u.Cpf ==
+                        request.Cpf
                 );
 
             if (cpfExists)
             {
-                throw new ArgumentException(
+                throw new Exception(
                     "CPF já cadastrado."
                 );
             }
 
             bool emailExists =
-                UserRepository.Users.Any(
-                    u => u.Email == request.Email
+                _context.Users.Any(
+                    u =>
+                        u.Email ==
+                        request.Email
                 );
 
             if (emailExists)
             {
-                throw new ArgumentException(
+                throw new Exception(
                     "Email já cadastrado."
                 );
             }
@@ -53,35 +67,44 @@ namespace FraudDetection.API.Controllers
 
             if (!validPassword)
             {
-                throw new ArgumentException(
+                throw new Exception(
                     error
                 );
             }
 
-            User user = new User
-            {
-                Id = Guid.NewGuid(),
+            User user =
+                new User
+                {
+                    Id =
+                        Guid.NewGuid(),
 
-                Name = request.Name,
+                    Name =
+                        request.Name,
 
-                Cpf = request.Cpf,
+                    Cpf =
+                        request.Cpf,
 
-                Email = request.Email,
+                    Email =
+                        request.Email,
 
-                Password = request.Password,
+                    Password =
+                        request.Password,
 
-                Role = "USER"
-            };
+                    Role =
+                        "USER"
+                };
 
-            UserRepository.Users.Add(
+            _context.Users.Add(
                 user
             );
+
+            _context.SaveChanges();
 
             return Ok(
                 new
                 {
                     message =
-                        "Usuário criado com sucesso."
+                        "Usuário cadastrado com sucesso."
                 }
             );
         }
@@ -92,18 +115,21 @@ namespace FraudDetection.API.Controllers
         )
         {
             User? user =
-                UserRepository.Users
+                _context.Users
                     .FirstOrDefault(
                         u =>
                             u.Cpf ==
-                                request.Cpf &&
-                            u.Password ==
-                                request.Password
+                            request.Cpf
                     );
 
-            if (user == null)
+            if (
+                user == null
+                ||
+                user.Password !=
+                    request.Password
+            )
             {
-                throw new UnauthorizedAccessException(
+                throw new Exception(
                     "CPF ou senha inválidos."
                 );
             }
@@ -117,6 +143,8 @@ namespace FraudDetection.API.Controllers
                     user.Name,
 
                     user.Cpf,
+
+                    user.Email,
 
                     user.Role
                 }

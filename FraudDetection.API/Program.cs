@@ -1,19 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 
 using FraudDetection.API.Data;
+using FraudDetection.API.Middleware;
 
 var builder =
     WebApplication.CreateBuilder(args);
-
-/*Services*/
 
 builder.Services.AddControllers();
 
 builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen();
-
-/*DB*/
 
 builder.Services.AddDbContext<AppDbContext>(
     options =>
@@ -25,10 +22,11 @@ builder.Services.AddDbContext<AppDbContext>(
         )
 );
 
-/*APP*/
+var app = builder.Build();
 
-var app =
-    builder.Build();
+app.UseMiddleware<
+    ExceptionMiddleware
+>();
 
 app.UseSwagger();
 

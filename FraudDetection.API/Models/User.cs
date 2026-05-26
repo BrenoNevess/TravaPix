@@ -12,6 +12,8 @@ namespace FraudDetection.API.Models
 
         public string Password { get; set; } = "";
 
+        public Card Card { get; set; } = new();
+
         public string Role { get; set; } = "USER";
     }
 }

@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 
+using FraudDetection.API.Data;
 using FraudDetection.API.DTOs;
 using FraudDetection.API.Models;
-using FraudDetection.API.Repositories;
 using FraudDetection.API.Services;
 
 namespace FraudDetection.API.Controllers
@@ -13,12 +13,22 @@ namespace FraudDetection.API.Controllers
     public class TransactionController
         : ControllerBase
     {
+        private readonly AppDbContext
+            _context;
+
+        public TransactionController(
+            AppDbContext context
+        )
+        {
+            _context = context;
+        }
+
         [HttpGet]
         public IActionResult GetAll()
         {
             return Ok(
-                TransactionRepository
-                    .Transactions
+                _context.Transactions
+                    .ToList()
             );
         }
 
@@ -29,7 +39,7 @@ namespace FraudDetection.API.Controllers
         {
             if (request.Amount <= 0)
             {
-                throw new ArgumentException(
+                throw new Exception(
                     "Valor inválido."
                 );
             }
@@ -38,21 +48,17 @@ namespace FraudDetection.API.Controllers
                 new FraudDetectionService();
 
             FraudAnalysisResult analysis =
-                service.AnalyzeTransaction(
-                    request.Amount,
-                    DateTime.Now
-                );
-
-            Enum.TryParse<FraudRiskLevel>(
-                analysis.RiskLevel,
-                true,
-                out FraudRiskLevel parsedRisk
-            );
+                service
+                    .AnalyzeTransaction(
+                        request.Amount,
+                        DateTime.Now
+                    );
 
             Transaction transaction =
                 new Transaction
                 {
-                    Id = Guid.NewGuid(),
+                    Id =
+                        Guid.NewGuid(),
 
                     SenderCpf =
                         request.SenderCpf,
@@ -70,15 +76,22 @@ namespace FraudDetection.API.Controllers
                         request.Description,
 
                     RiskLevel =
-                        parsedRisk,
+                        Enum.Parse<
+                            FraudRiskLevel
+                        >(
+                            analysis.RiskLevel
+                        ),
 
                     CreatedAt =
                         DateTime.Now
                 };
 
-            TransactionRepository
-                .Transactions
-                .Add(transaction);
+            _context.Transactions
+                .Add(
+                    transaction
+                );
+
+            _context.SaveChanges();
 
             return Ok(
                 new
@@ -86,8 +99,11 @@ namespace FraudDetection.API.Controllers
                     message =
                         "Transação criada.",
 
-                    riskLevel =
+                    risk =
                         analysis.RiskLevel,
+
+                    alerts =
+                        analysis.Alerts,
 
                     transaction
                 }

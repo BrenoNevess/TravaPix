@@ -1,33 +1,51 @@
 using Microsoft.AspNetCore.Mvc;
 
+using FraudDetection.API.Data;
 using FraudDetection.API.DTOs;
 using FraudDetection.API.Models;
-using FraudDetection.API.Repositories;
 
 namespace FraudDetection.API.Controllers
 {
     [ApiController]
 
-    [Route("api/[controller]")]
+    [Route("api/users")]
     public class UserController
         : ControllerBase
     {
+        private readonly AppDbContext
+            _context;
+
+        public UserController(
+            AppDbContext context
+        )
+        {
+            _context = context;
+        }
+
         [HttpGet]
         public IActionResult GetAll()
         {
-            List<UserResponse> users =
-                UserRepository.Users
-                .Select(
-                    u =>
-                        new UserResponse
-                        {
-                            Name = u.Name,
-                            Cpf = u.Cpf,
-                            Email = u.Email,
-                            Role = u.Role
-                        }
-                )
-                .ToList();
+            List<UserResponse>
+                users =
+                    _context.Users
+                        .Select(
+                            u =>
+                                new UserResponse
+                                {
+                                    Name =
+                                        u.Name,
+
+                                    Cpf =
+                                        u.Cpf,
+
+                                    Email =
+                                        u.Email,
+
+                                    Role =
+                                        u.Role
+                                }
+                        )
+                        .ToList();
 
             return Ok(users);
         }
@@ -38,14 +56,16 @@ namespace FraudDetection.API.Controllers
         )
         {
             User? user =
-                UserRepository.Users
-                .FirstOrDefault(
-                    u => u.Cpf == cpf
-                );
+                _context.Users
+                    .FirstOrDefault(
+                        u =>
+                            u.Cpf ==
+                            cpf
+                    );
 
             if (user == null)
             {
-                throw new ArgumentException(
+                throw new Exception(
                     "Usuário não encontrado."
                 );
             }
@@ -53,10 +73,17 @@ namespace FraudDetection.API.Controllers
             return Ok(
                 new UserResponse
                 {
-                    Name = user.Name,
-                    Cpf = user.Cpf,
-                    Email = user.Email,
-                    Role = user.Role
+                    Name =
+                        user.Name,
+
+                    Cpf =
+                        user.Cpf,
+
+                    Email =
+                        user.Email,
+
+                    Role =
+                        user.Role
                 }
             );
         }
@@ -66,38 +93,33 @@ namespace FraudDetection.API.Controllers
             RegisterRequest request
         )
         {
-            bool exists =
-                UserRepository.Users.Any(
-                    u => u.Cpf == request.Cpf
-                );
-
-            if (exists)
-            {
-                throw new ArgumentException(
-                    "CPF já existe."
-                );
-            }
-
             User user =
                 new User
                 {
-                    Id = Guid.NewGuid(),
+                    Id =
+                        Guid.NewGuid(),
 
-                    Name = request.Name,
+                    Name =
+                        request.Name,
 
-                    Cpf = request.Cpf,
+                    Cpf =
+                        request.Cpf,
 
-                    Email = request.Email,
+                    Email =
+                        request.Email,
 
                     Password =
                         request.Password,
 
-                    Role = "USER"
+                    Role =
+                        "USER"
                 };
 
-            UserRepository.Users.Add(
+            _context.Users.Add(
                 user
             );
+
+            _context.SaveChanges();
 
             return Ok(
                 new
@@ -115,14 +137,16 @@ namespace FraudDetection.API.Controllers
         )
         {
             User? user =
-                UserRepository.Users
-                .FirstOrDefault(
-                    u => u.Cpf == cpf
-                );
+                _context.Users
+                    .FirstOrDefault(
+                        u =>
+                            u.Cpf ==
+                            cpf
+                    );
 
             if (user == null)
             {
-                throw new ArgumentException(
+                throw new Exception(
                     "Usuário não encontrado."
                 );
             }
@@ -135,6 +159,8 @@ namespace FraudDetection.API.Controllers
 
             user.Password =
                 request.Password;
+
+            _context.SaveChanges();
 
             return Ok(
                 new
@@ -151,21 +177,25 @@ namespace FraudDetection.API.Controllers
         )
         {
             User? user =
-                UserRepository.Users
-                .FirstOrDefault(
-                    u => u.Cpf == cpf
-                );
+                _context.Users
+                    .FirstOrDefault(
+                        u =>
+                            u.Cpf ==
+                            cpf
+                    );
 
             if (user == null)
             {
-                throw new ArgumentException(
+                throw new Exception(
                     "Usuário não encontrado."
                 );
             }
 
-            UserRepository.Users.Remove(
+            _context.Users.Remove(
                 user
             );
+
+            _context.SaveChanges();
 
             return Ok(
                 new
