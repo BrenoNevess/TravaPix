@@ -8,8 +8,7 @@ namespace FraudDetection.API.Data
         : DbContext
     {
         public AppDbContext(
-            DbContextOptions<AppDbContext>
-            options
+            DbContextOptions<AppDbContext> options
         )
             : base(options)
         {
@@ -24,7 +23,6 @@ namespace FraudDetection.API.Data
         public DbSet<Card>
             Cards => Set<Card>();
 
-
         protected override void OnModelCreating(
             ModelBuilder modelBuilder
         )
@@ -33,26 +31,56 @@ namespace FraudDetection.API.Data
                 modelBuilder
             );
 
+            /*
+             * RELAÇÃO USER -> CARD
+             * 1 usuário possui 1 cartão
+             */
+
+            modelBuilder
+                .Entity<User>()
+                .HasOne(
+                    u => u.Card
+                )
+                .WithOne(
+                    c => c.User
+                )
+                .HasForeignKey<Card>(
+                    c => c.UserId
+                );
+
+            /*
+             * PRECISION DECIMAL
+             */
+
             modelBuilder
                 .Entity<Transaction>()
                 .Property(
                     t => t.Amount
                 )
-                .HasPrecision(18,2);
+                .HasPrecision(
+                    18,
+                    2
+                );
 
             modelBuilder
                 .Entity<Card>()
                 .Property(
                     c => c.CreditLimit
                 )
-                .HasPrecision(18,2);
+                .HasPrecision(
+                    18,
+                    2
+                );
 
             modelBuilder
                 .Entity<Card>()
                 .Property(
                     c => c.UsedLimit
                 )
-                .HasPrecision(18,2);
+                .HasPrecision(
+                    18,
+                    2
+                );
         }
     }
 }
