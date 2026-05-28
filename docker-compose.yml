@@ -7,10 +7,8 @@ services:
     restart: always
 
     environment:
-      MYSQL_ROOT_PASSWORD: root123
-      MYSQL_DATABASE: frauddb
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: admin123
+      MYSQL_ROOT_PASSWORD: "gmail@t#k"
+      MYSQL_DATABASE: fraudetectiondb
 
     ports:
       - "3306:3306"
