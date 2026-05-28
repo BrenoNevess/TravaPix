@@ -8,7 +8,8 @@ namespace FraudDetection.API.Data
         : DbContext
     {
         public AppDbContext(
-            DbContextOptions<AppDbContext> options
+            DbContextOptions<AppDbContext>
+            options
         )
             : base(options)
         {
@@ -17,11 +18,12 @@ namespace FraudDetection.API.Data
         public DbSet<User>
             Users => Set<User>();
 
+        public DbSet<Card>
+            Cards => Set<Card>();
+
         public DbSet<Transaction>
             Transactions => Set<Transaction>();
 
-        public DbSet<Card>
-            Cards => Set<Card>();
 
         protected override void OnModelCreating(
             ModelBuilder modelBuilder
@@ -31,36 +33,77 @@ namespace FraudDetection.API.Data
                 modelBuilder
             );
 
-            /*
-             * RELAÇÃO USER -> CARD
-             * 1 usuário possui 1 cartão
-             */
+            // =========================
+            // USERS
+            // =========================
 
             modelBuilder
                 .Entity<User>()
-                .HasOne(
-                    u => u.Card
+                .Property(
+                    u => u.Name
                 )
-                .WithOne(
-                    c => c.User
-                )
-                .HasForeignKey<Card>(
-                    c => c.UserId
-                );
-
-            /*
-             * PRECISION DECIMAL
-             */
+                .HasMaxLength(150);
 
             modelBuilder
-                .Entity<Transaction>()
+                .Entity<User>()
                 .Property(
-                    t => t.Amount
+                    u => u.Cpf
                 )
-                .HasPrecision(
-                    18,
-                    2
-                );
+                .HasMaxLength(14);
+
+            modelBuilder
+                .Entity<User>()
+                .Property(
+                    u => u.Email
+                )
+                .HasMaxLength(255);
+
+            modelBuilder
+                .Entity<User>()
+                .Property(
+                    u => u.Password
+                )
+                .HasMaxLength(255);
+
+            modelBuilder
+                .Entity<User>()
+                .Property(
+                    u => u.Role
+                )
+                .HasMaxLength(30);
+
+            modelBuilder
+                .Entity<User>()
+                .HasIndex(
+                    u => u.Email
+                )
+                .IsUnique();
+
+            modelBuilder
+                .Entity<User>()
+                .HasIndex(
+                    u => u.Cpf
+                )
+                .IsUnique();
+
+
+            // =========================
+            // CARDS
+            // =========================
+
+            modelBuilder
+                .Entity<Card>()
+                .Property(
+                    c => c.CardNumber
+                )
+                .HasMaxLength(255);
+
+            modelBuilder
+                .Entity<Card>()
+                .Property(
+                    c => c.ExpiryDate
+                )
+                .HasMaxLength(5);
 
             modelBuilder
                 .Entity<Card>()
@@ -76,6 +119,64 @@ namespace FraudDetection.API.Data
                 .Entity<Card>()
                 .Property(
                     c => c.UsedLimit
+                )
+                .HasPrecision(
+                    18,
+                    2
+                );
+
+            modelBuilder
+                .Entity<User>()
+                .HasOne(
+                    u => u.Card
+                )
+                .WithOne(
+                    c => c.User
+                )
+                .HasForeignKey<Card>(
+                    c => c.UserId
+                )
+                .OnDelete(
+                    DeleteBehavior.Cascade
+                );
+
+
+            // =========================
+            // TRANSACTIONS
+            // =========================
+
+            modelBuilder
+                .Entity<Transaction>()
+                .Property(
+                    t => t.SenderCpf
+                )
+                .HasMaxLength(14);
+
+            modelBuilder
+                .Entity<Transaction>()
+                .Property(
+                    t => t.ReceiverCpf
+                )
+                .HasMaxLength(14);
+
+            modelBuilder
+                .Entity<Transaction>()
+                .Property(
+                    t => t.Location
+                )
+                .HasMaxLength(120);
+
+            modelBuilder
+                .Entity<Transaction>()
+                .Property(
+                    t => t.Description
+                )
+                .HasMaxLength(500);
+
+            modelBuilder
+                .Entity<Transaction>()
+                .Property(
+                    t => t.Amount
                 )
                 .HasPrecision(
                     18,
