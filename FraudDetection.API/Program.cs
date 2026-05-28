@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Pomelo.EntityFrameworkCore.MySql;
-
 using FraudDetection.API.Data;
 using FraudDetection.API.Middleware;
 
@@ -20,7 +18,6 @@ builder.Services.AddDbContext<AppDbContext>(
                 .GetConnectionString(
                     "DefaultConnection"
                 ),
-
             ServerVersion.AutoDetect(
                 builder.Configuration
                     .GetConnectionString(
@@ -32,9 +29,7 @@ builder.Services.AddDbContext<AppDbContext>(
 
 var app = builder.Build();
 
-app.UseMiddleware<
-    ExceptionMiddleware
->();
+app.UseMiddleware<ExceptionMiddleware>();
 
 app.UseSwagger();
 
