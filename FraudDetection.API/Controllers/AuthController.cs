@@ -72,6 +72,35 @@ namespace FraudDetection.API.Controllers
                 );
             }
 
+            if(
+                request.CardCvv.Length < 3
+                ||
+                request.CardCvv.Length > 4
+            )
+            {
+                throw new Exception(
+                    "CVV inválido."
+                );
+            }
+
+            Card card =
+                new Card
+                {
+                    Id =
+                        Guid.NewGuid(),
+
+                    CardNumber =
+                        request.CardNumber,
+
+                    ExpiryDate =
+                        request.ExpiryDate,
+
+                    CreditLimit =
+                        request.CreditLimit,
+
+                    UsedLimit = 0
+                };
+
             User user =
                 new User
                 {
@@ -91,7 +120,10 @@ namespace FraudDetection.API.Controllers
                         request.Password,
 
                     Role =
-                        "USER"
+                        "USER",
+
+                    Card =
+                        card
                 };
 
             _context.Users.Add(
@@ -122,7 +154,7 @@ namespace FraudDetection.API.Controllers
                             request.Cpf
                     );
 
-            if (
+            if(
                 user == null
                 ||
                 user.Password !=
