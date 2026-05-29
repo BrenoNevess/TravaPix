@@ -1,3 +1,5 @@
+using System;
+
 namespace FraudDetection.Models
 {
     public class TransactionResponse

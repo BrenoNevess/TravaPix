@@ -53,17 +53,12 @@ namespace FraudDetection.Forms
                             28,
                             28
                         ),
-
-                    Location =
-                        new Point(
-                            40,
-                            40
-                        )
                 };
 
-            Controls.Add(
-                container
-            );
+            Controls.Add(container);
+
+            container.Location =
+                new Point(250, 100);
 
             Label lblTitle =
                 new Label

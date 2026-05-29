@@ -2,30 +2,22 @@ using System.Text.Json;
 using System.Drawing;
 using System.Windows.Forms;
 
+using FraudDetection.Interface.Components;
 using FraudDetection.Services;
 using FraudDetection.Session;
 using FraudDetection.Models;
-using FraudDetection.Interface.Components;
 
-namespace FraudDetection.Forms
+namespace FraudDetection.Interface.Forms
 {
-    public class DashboardForm
-        : Form
+    public class DashboardForm : Form
     {
-        private DashboardCard
-            cardUsers = null!;
-
-        private DashboardCard
-            cardTransactions = null!;
-
-        private DashboardCard
-            cardUser = null!;
-
-        private Button
-            btnLogout = null!;
+        private DashboardCard cardUser = null!;
+        private DashboardCard cardTransactions = null!;
+        private DashboardCard cardFrauds = null!;
 
         private readonly ApiService
-            apiService = new();
+            apiService =
+                new();
 
         public DashboardForm()
         {
@@ -36,33 +28,39 @@ namespace FraudDetection.Forms
             InitializeDashboard()
         {
             BackColor =
-                Color.FromArgb(
-                    18,
-                    18,
-                    18
-                );
+                Color.FromArgb(18,18,18);
 
-            Size =
-                new Size(
-                    1600,
-                    900
-                );
+            AutoScroll = true;
 
             Panel container =
                 new Panel
                 {
-                    Dock = DockStyle.Fill
+                    Size =
+                        new Size(
+                            1100,
+                            700
+                        ),
+
+                    BackColor =
+                        Color.Transparent,
+
+                    Anchor =
+                        AnchorStyles.None
                 };
 
-            Controls.Add(
-                container
-            );
+            Controls.Add(container);
 
-            Label title =
+            container.Location =
+                new Point(-300,-200);
+
+            Label lblTitle =
                 new Label
                 {
                     Text =
-                        "Dashboard",
+                        "Visão Geral",
+
+                    ForeColor =
+                        Color.White,
 
                     Font =
                         new Font(
@@ -71,149 +69,194 @@ namespace FraudDetection.Forms
                             FontStyle.Bold
                         ),
 
+                    AutoSize = true,
+
+                    Location =
+                        new Point(
+                            20,
+                            20
+                        )
+                };
+
+            container.Controls.Add(
+                lblTitle
+            );
+
+            cardUser =
+                new DashboardCard(
+                    "Usuário",
+
+                    UserSession
+                        .CurrentUser?
+                        .Name
+                    ??
+                    "Desconhecido",
+
+                    Color.FromArgb(
+                        0,
+                        120,
+                        215
+                    )
+                );
+
+            cardUser.Location =
+                new Point(20,100);
+
+            cardTransactions =
+                new DashboardCard(
+                    "Transações",
+                    "0",
+
+                    Color.FromArgb(
+                        40,
+                        167,
+                        69
+                    )
+                );
+
+            cardTransactions.Location =
+                new Point(390,100);
+
+            cardFrauds =
+                new DashboardCard(
+                    "Suspeitas",
+                    "0",
+
+                    Color.FromArgb(
+                        220,
+                        53,
+                        69
+                    )
+                );
+
+            cardFrauds.Location =
+                new Point(760,100);
+
+            container.Controls.Add(
+                cardUser
+            );
+
+            container.Controls.Add(
+                cardTransactions
+            );
+
+            container.Controls.Add(
+                cardFrauds
+            );
+
+            Panel chartPanel =
+                new Panel
+                {
+                    Size =
+                        new Size(
+                            1020,
+                            350
+                        ),
+
+                    Location =
+                        new Point(
+                            20,
+                            320
+                        ),
+
+                    BackColor =
+                        Color.FromArgb(
+                            28,
+                            28,
+                            28
+                        )
+                };
+
+            container.Controls.Add(
+                chartPanel
+            );
+
+            Label lblChart =
+                new Label
+                {
+                    Text =
+                        "Monitoramento Pessoal",
+
                     ForeColor =
                         Color.White,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            16,
+                            FontStyle.Bold
+                        ),
 
                     AutoSize =
                         true,
 
                     Location =
                         new Point(
-                            40,
-                            30
+                            20,
+                            20
                         )
                 };
 
-            container.Controls.Add(
-                title
+            chartPanel.Controls.Add(
+                lblChart
             );
 
-            cardUsers =
-                new DashboardCard(
-                    "Usuários",
-                    "...",
-                    Color.Blue
-                );
-
-            cardUsers.Location =
-                new Point(
-                    40,
-                    120
-                );
-
-            container.Controls.Add(
-                cardUsers
-            );
-
-            cardTransactions =
-                new DashboardCard(
-                    "Transações",
-                    "...",
-                    Color.Green
-                );
-
-            cardTransactions.Location =
-                new Point(
-                    420,
-                    120
-                );
-
-            container.Controls.Add(
-                cardTransactions
-            );
-
-            cardUser =
-                new DashboardCard(
-                    "Usuário Atual",
-                    UserSession
-                        .CurrentUser?
-                        .Name
-                        ??
-                        "Desconhecido",
-                    Color.DarkOrange
-                );
-
-            cardUser.Location =
-                new Point(
-                    800,
-                    120
-                );
-
-            container.Controls.Add(
-                cardUser
-            );
-
-            btnLogout =
-                new Button
+            Label lblInfo =
+                new Label
                 {
                     Text =
-                        "Logout",
+                        "Dados sincronizados com a API.",
 
-                    Size =
-                        new Size(
-                            180,
-                            45
+                    ForeColor =
+                        Color.Gray,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            12
                         ),
+
+                    AutoSize =
+                        true,
 
                     Location =
                         new Point(
-                            1250,
-                            35
-                        ),
-
-                    BackColor =
-                        Color.DarkRed,
-
-                    ForeColor =
-                        Color.White
+                            20,
+                            80
+                        )
                 };
 
-            btnLogout.Click +=
-                BtnLogout_Click;
-
-            container.Controls.Add(
-                btnLogout
+            chartPanel.Controls.Add(
+                lblInfo
             );
 
-            await LoadDashboard();
+            await LoadDashboardData();
         }
 
         private async Task
-            LoadDashboard()
+            LoadDashboardData()
         {
             try
             {
-                string usersJson =
+                string cpf =
+                    UserSession
+                        .CurrentUser!
+                        .Cpf;
+
+                string json =
                     await apiService
-                        .GetUsers();
+                        .GetUserTransactions(
+                            cpf
+                        );
 
-                List<User>?
-                    users =
-                        JsonSerializer
-                            .Deserialize
-                            <
-                                List<User>
-                            >(
-                                usersJson,
-                                new JsonSerializerOptions
-                                {
-                                    PropertyNameCaseInsensitive =
-                                        true
-                                }
-                            );
-
-                string transactionsJson =
-                    await apiService
-                        .GetTransactions();
-
-                List<TransactionRecord>?
+                List<TransactionResponse>?
                     transactions =
                         JsonSerializer
                             .Deserialize
                             <
-                                List<TransactionRecord>
+                                List<TransactionResponse>
                             >(
-                                transactionsJson,
+                                json,
                                 new JsonSerializerOptions
                                 {
                                     PropertyNameCaseInsensitive =
@@ -221,41 +264,43 @@ namespace FraudDetection.Forms
                                 }
                             );
 
-                cardUsers.UpdateValue(
-                    users?.Count
-                        .ToString()
+                int total =
+                    transactions?
+                        .Count
                     ??
-                    "0"
-                );
+                    0;
+
+                int suspicious =
+                    transactions?
+                        .Count(
+                            t =>
+                                t.RiskLevel
+                                    .ToString()
+                                !=
+                                "Safe"
+                        )
+                    ??
+                    0;
 
                 cardTransactions
                     .UpdateValue(
-                        transactions
-                            ?.Count
+                        total
                             .ToString()
-                        ??
-                        "0"
+                    );
+
+                cardFrauds
+                    .UpdateValue(
+                        suspicious
+                            .ToString()
                     );
             }
-            catch
+            catch(Exception ex)
             {
                 MessageBox.Show(
-                    "Erro carregando dashboard."
+                    ex.Message,
+                    "Erro Dashboard"
                 );
             }
-        }
-
-        private void BtnLogout_Click(
-            object? sender,
-            EventArgs e
-        )
-        {
-            UserSession.Logout();
-
-            Hide();
-
-            new LoginForm()
-                .Show();
         }
     }
 }

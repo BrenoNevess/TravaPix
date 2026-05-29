@@ -66,9 +66,7 @@ namespace FraudDetection.Forms
                     40
                 );
 
-            /*
-             * TITULO PRINCIPAL
-             */
+            /*Titulo Principal*/
 
             Label lblTitle =
                 new Label
