@@ -1,80 +1,24 @@
-using FraudDetection.Models;
-using FraudDetection.Repositories;
-using FraudDetection.Core;
+using System.Threading.Tasks;
+
+using FraudDetection.Services;
 
 namespace FraudDetection.Services
 {
     public class TransactionService
     {
-        private readonly FakeTransactionRepository
-            transactionRepository = new();
+        private readonly ApiService
+            apiService =
+                new ApiService();
 
-        private readonly FakeFraudRepository
-            fraudRepository = new();
-
-        public FraudAnalysisResult ProcessTransaction(
-            TransactionRecord transaction
-        )
+        public async Task<string>
+            CreateTransaction(
+                object transactionData
+            )
         {
-            FraudAnalysisResult analysis =
-                FraudDetectionService
-                    .AnalyzeTransaction(
-                        transaction
-                    );
-
-            transaction.RiskScore =
-                analysis.RiskScore;
-
-            transaction.RiskLevel =
-                analysis.RiskLevel;
-
-            transaction.IsFraud =
-                analysis.IsFraud;
-
-            transactionRepository.Add(
-                transaction
-            );
-
-            if (analysis.IsFraud)
-            {
-                FraudRecord fraud =
-                    new FraudRecord
-                    {
-                        Id = transaction.Id,
-
-                        SenderCpf =
-                            transaction.SenderCpf,
-
-                        ReceiverCpf =
-                            transaction.ReceiverCpf,
-
-                        Amount =
-                            transaction.Amount,
-
-                        Location =
-                            transaction.Location,
-
-                        Date =
-                            transaction.Date,
-
-                        Reason =
-                            analysis.Reason,
-
-                        RiskScore =
-                            analysis.RiskScore,
-
-                        RiskLevel =
-                            analysis.RiskLevel
-                    };
-
-                fraudRepository.Add(
-                    fraud
+            return await apiService
+                .CreateTransaction(
+                    transactionData
                 );
-            }
-
-            EventBus.NotifyDataChanged();
-
-            return analysis;
         }
     }
 }

@@ -1,8 +1,6 @@
-using System;
-
 namespace FraudDetection.Models
 {
-    public class TransactionRecord
+    public class TransactionResponse
     {
         public Guid Id { get; set; }
 
@@ -16,14 +14,8 @@ namespace FraudDetection.Models
 
         public string Description { get; set; } = "";
 
-        public DateTime Date { get; set; }
+        public string RiskLevel { get; set; } = "";
 
-        /* Resultado da analise */
-
-        public int RiskScore { get; set; }
-
-        public FraudRiskLevel RiskLevel { get; set; }
-
-        public bool IsFraud { get; set; }
+        public DateTime CreatedAt { get; set; }
     }
 }

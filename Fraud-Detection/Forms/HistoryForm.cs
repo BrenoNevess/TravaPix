@@ -1,20 +1,20 @@
 using System;
 using System.Drawing;
+using System.Text.Json;
 using System.Windows.Forms;
 
-using FraudDetection.Repositories;
-using FraudDetection.Core;
 using FraudDetection.Models;
+using FraudDetection.Services;
 
-namespace FraudDetection.Interface.Forms
+namespace FraudDetection.Forms
 {
     public class HistoryForm : Form
     {
-        private DataGridView dgvHistory = null!;
+        private DataGridView
+            dgvHistory = null!;
 
-        private readonly FakeTransactionRepository
-            transactionRepository =
-                new FakeTransactionRepository();
+        private readonly ApiService
+            apiService = new();
 
         public HistoryForm()
         {
@@ -24,135 +24,121 @@ namespace FraudDetection.Interface.Forms
         private void InitializeHistory()
         {
             BackColor =
-                Color.FromArgb(18, 18, 18);
+                Color.FromArgb(
+                    18,
+                    18,
+                    18
+                );
+
+            Size =
+                new Size(
+                    1400,
+                    850
+                );
 
             AutoScroll = true;
 
-            Panel container = new Panel
-            {
-                Size = new Size(1150, 700),
+            Panel container =
+                new Panel
+                {
+                    Size =
+                        new Size(
+                            1250,
+                            700
+                        ),
 
-                BackColor =
-                    Color.FromArgb(28, 28, 28),
+                    BackColor =
+                        Color.FromArgb(
+                            28,
+                            28,
+                            28
+                        ),
 
-                Anchor =
-                    AnchorStyles.None
-            };
+                    Location =
+                        new Point(
+                            40,
+                            40
+                        )
+                };
 
-            Controls.Add(container);
+            Controls.Add(
+                container
+            );
 
-            container.Location =
-                new Point(-300, -200);
+            Label lblTitle =
+                new Label
+                {
+                    Text =
+                        "Histórico de Transações",
 
-            Label lblTitle = new Label
-            {
-                Text =
-                    "Histórico de Transações",
+                    ForeColor =
+                        Color.White,
 
-                ForeColor = Color.White,
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            24,
+                            FontStyle.Bold
+                        ),
 
-                Font = new Font(
-                    "Segoe UI",
-                    24,
-                    FontStyle.Bold
-                ),
+                    AutoSize = true,
 
-                AutoSize = true,
-
-                Location = new Point(
-                    30,
-                    25
-                )
-            };
+                    Location =
+                        new Point(
+                            30,
+                            25
+                        )
+                };
 
             container.Controls.Add(
                 lblTitle
             );
 
-            dgvHistory = new DataGridView
-            {
-                Size = new Size(1080, 540),
+            dgvHistory =
+                new DataGridView
+                {
+                    Size =
+                        new Size(
+                            1180,
+                            540
+                        ),
 
-                Location =
-                    new Point(30, 100),
+                    Location =
+                        new Point(
+                            30,
+                            100
+                        ),
 
-                BackgroundColor =
-                    Color.FromArgb(
-                        18,
-                        18,
-                        18
-                    ),
+                    BackgroundColor =
+                        Color.FromArgb(
+                            18,
+                            18,
+                            18
+                        ),
 
-                BorderStyle =
-                    BorderStyle.None,
+                    BorderStyle =
+                        BorderStyle.None,
 
-                RowHeadersVisible =
-                    false,
+                    RowHeadersVisible =
+                        false,
 
-                AllowUserToAddRows =
-                    false,
+                    ReadOnly = true,
 
-                ReadOnly = true,
+                    AllowUserToAddRows =
+                        false,
 
-                AutoSizeColumnsMode =
-                    DataGridViewAutoSizeColumnsMode.Fill
-            };
-
-            dgvHistory.EnableHeadersVisualStyles =
-                false;
-
-            dgvHistory.ColumnHeadersDefaultCellStyle
-                .BackColor =
-                    Color.FromArgb(
-                        45,
-                        45,
-                        45
-                    );
-
-            dgvHistory.ColumnHeadersDefaultCellStyle
-                .ForeColor =
-                    Color.White;
-
-            dgvHistory.ColumnHeadersDefaultCellStyle
-                .Font =
-                    new Font(
-                        "Segoe UI",
-                        10,
-                        FontStyle.Bold
-                    );
-
-            dgvHistory.DefaultCellStyle
-                .BackColor =
-                    Color.FromArgb(
-                        30,
-                        30,
-                        30
-                    );
-
-            dgvHistory.DefaultCellStyle
-                .ForeColor =
-                    Color.White;
-
-            dgvHistory.DefaultCellStyle
-                .SelectionBackColor =
-                    Color.FromArgb(
-                        0,
-                        120,
-                        215
-                    );
-
-            dgvHistory.DefaultCellStyle
-                .SelectionForeColor =
-                    Color.White;
+                    AutoSizeColumnsMode =
+                        DataGridViewAutoSizeColumnsMode.Fill
+                };
 
             dgvHistory.Columns.Add(
-                "Code",
-                "Código"
+                "Sender",
+                "Remetente"
             );
 
             dgvHistory.Columns.Add(
-                "Cpf",
-                "CPF"
+                "Receiver",
+                "Destinatário"
             );
 
             dgvHistory.Columns.Add(
@@ -161,13 +147,23 @@ namespace FraudDetection.Interface.Forms
             );
 
             dgvHistory.Columns.Add(
-                "Date",
-                "Data"
+                "Location",
+                "Local"
             );
 
             dgvHistory.Columns.Add(
-                "Status",
-                "Status"
+                "Description",
+                "Descrição"
+            );
+
+            dgvHistory.Columns.Add(
+                "Risk",
+                "Risco"
+            );
+
+            dgvHistory.Columns.Add(
+                "Date",
+                "Data"
             );
 
             container.Controls.Add(
@@ -175,37 +171,72 @@ namespace FraudDetection.Interface.Forms
             );
 
             LoadTransactions();
-
-            EventBus.OnDataChanged +=
-                LoadTransactions;
         }
 
-        private void LoadTransactions()
+        private async void LoadTransactions()
         {
-            dgvHistory.Rows.Clear();
-
-            foreach (
-                TransactionRecord transaction
-                in transactionRepository.GetAll()
-            )
+            try
             {
-                dgvHistory.Rows.Add(
-                    Guid.NewGuid()
-                        .ToString()
-                        .Substring(0, 8),
+                dgvHistory.Rows.Clear();
 
-                    transaction.SenderCpf,
+                string json =
+                    await apiService
+                        .GetTransactions();
 
-                    $"R$ {transaction.Amount}",
+                List<TransactionResponse>?
+                    transactions =
+                        JsonSerializer
+                            .Deserialize<
+                                List<
+                                    TransactionResponse
+                                >
+                            >(
+                                json,
+                                new JsonSerializerOptions
+                                {
+                                    PropertyNameCaseInsensitive =
+                                        true
+                                }
+                            );
 
-                    transaction.Date
-                        .ToString(
-                            "dd/MM/yyyy HH:mm"
-                        ),
+                if(
+                    transactions == null
+                )
+                {
+                    return;
+                }
 
-                    transaction.Amount >= 5000
-                        ? "Suspeita"
-                        : "Segura"
+                foreach(
+                    TransactionResponse
+                        transaction
+                    in transactions
+                )
+                {
+                    dgvHistory.Rows.Add(
+                        transaction.SenderCpf,
+
+                        transaction.ReceiverCpf,
+
+                        $"R$ {transaction.Amount}",
+
+                        transaction.Location,
+
+                        transaction.Description,
+
+                        transaction.RiskLevel,
+
+                        transaction.CreatedAt
+                            .ToString(
+                                "dd/MM/yyyy HH:mm"
+                            )
+                    );
+                }
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Erro Histórico"
                 );
             }
         }

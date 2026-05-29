@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using FraudDetection.Models;
 
 namespace FraudDetection.Services
 {
@@ -41,29 +42,39 @@ namespace FraudDetection.Services
                 .ReadAsStringAsync();
         }
 
-        public async Task<string> Login(
-            object data
-        )
-        {
-            StringContent content =
-                new StringContent(
-                    JsonSerializer.Serialize(
-                        data
-                    ),
-                    Encoding.UTF8,
-                    "application/json"
-                );
+            public async Task<LoginResponse>
+            Login(object data)
+    {
+        StringContent content =
+            new StringContent(
+                JsonSerializer.Serialize(
+                    data
+                ),
+                Encoding.UTF8,
+                "application/json"
+            );
 
-            HttpResponseMessage response =
-                await client.PostAsync(
-                    "auth/login",
-                    content
-                );
+        HttpResponseMessage response =
+            await client.PostAsync(
+                "auth/login",
+                content
+            );
 
-            return await response
+        string json =
+            await response
                 .Content
                 .ReadAsStringAsync();
-        }
+
+        return JsonSerializer
+            .Deserialize<LoginResponse>(
+                json,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive =
+                        true
+                }
+            )!;
+    }
 
         public async Task<string>
             CreateTransaction(
@@ -96,6 +107,19 @@ namespace FraudDetection.Services
             HttpResponseMessage response =
                 await client.GetAsync(
                     "users"
+                );
+
+            return await response
+                .Content
+                .ReadAsStringAsync();
+        }
+
+        public async Task<string>
+            GetTransactions()
+        {
+            HttpResponseMessage response =
+                await client.GetAsync(
+                    "transaction"
                 );
 
             return await response

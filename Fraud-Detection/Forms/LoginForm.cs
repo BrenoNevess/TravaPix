@@ -1,7 +1,10 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+
+using FraudDetection.Models;
 using FraudDetection.Services;
+using FraudDetection.Session;
 
 namespace FraudDetection.Forms
 {
@@ -9,7 +12,9 @@ namespace FraudDetection.Forms
     {
         private TextBox txtCpf = null!;
         private TextBox txtPassword = null!;
+
         private Button btnLogin = null!;
+        private Button btnRegister = null!;
 
         private readonly ApiService apiService = new();
 
@@ -21,30 +26,32 @@ namespace FraudDetection.Forms
         private void InitializeLogin()
         {
             BackColor = Color.FromArgb(18, 18, 18);
-            AutoScroll = true;
+            Size = new Size(1600, 900);
+            StartPosition = FormStartPosition.CenterScreen;
+            Text = "Fraud Detection — Login";
 
             Panel container = new Panel
             {
-                Size = new Size(900, 500),
-                BackColor = Color.FromArgb(28, 28, 28)
+                Size = new Size(700, 500),
+                BackColor = Color.FromArgb(28, 28, 28),
+                Location = new Point(430, 170)
             };
 
-            container.Location = new Point(400, 160);
             Controls.Add(container);
 
-            Label title = new Label
+            Label lblTitle = new Label
             {
                 Text = "LOGIN",
                 ForeColor = Color.White,
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
+                Font = new Font("Segoe UI", 26, FontStyle.Bold),
                 AutoSize = true,
-                Location = new Point(380, 40)
+                Location = new Point(280, 35)
             };
 
-            container.Controls.Add(title);
+            container.Controls.Add(lblTitle);
 
-            txtCpf = CreateTextBox("CPF", 140, 500);
-            txtPassword = CreateTextBox("Senha", 230, 500);
+            txtCpf = CreateTextBox("CPF", 140);
+            txtPassword = CreateTextBox("Senha", 240);
             txtPassword.PasswordChar = '*';
 
             container.Controls.Add(txtCpf);
@@ -53,8 +60,8 @@ namespace FraudDetection.Forms
             btnLogin = new Button
             {
                 Text = "Entrar",
-                Size = new Size(500, 45),
-                Location = new Point(200, 330),
+                Size = new Size(420, 45),
+                Location = new Point(140, 340),
                 BackColor = Color.FromArgb(0, 120, 215),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -63,14 +70,33 @@ namespace FraudDetection.Forms
 
             btnLogin.Click += BtnLogin_Click;
             container.Controls.Add(btnLogin);
+
+            btnRegister = new Button
+            {
+                Text = "Criar Conta",
+                Size = new Size(420, 45),
+                Location = new Point(140, 400),
+                BackColor = Color.FromArgb(45, 45, 45),
+                ForeColor = Color.White,
+                FlatStyle = FlatStyle.Flat,
+                Font = new Font("Segoe UI", 10, FontStyle.Bold)
+            };
+
+            btnRegister.Click += (s, e) =>
+            {
+                Hide();
+                new RegisterForm().Show();
+            };
+
+            container.Controls.Add(btnRegister);
         }
 
-        private TextBox CreateTextBox(string placeholder, int y, int width)
+        private TextBox CreateTextBox(string placeholder, int y)
         {
             TextBox txt = new TextBox
             {
-                Size = new Size(width, 40),
-                Location = new Point(200, y),
+                Size = new Size(420, 40),
+                Location = new Point(140, y),
                 Text = placeholder,
                 BackColor = Color.FromArgb(40, 40, 40),
                 ForeColor = Color.White
@@ -101,13 +127,29 @@ namespace FraudDetection.Forms
 
             try
             {
-                string response = await apiService.Login(request);
+                LoginResponse response =
+                    await apiService.Login(request);
 
-                MessageBox.Show(response, "Login");
+                if (!response.Success)
+                {
+                    MessageBox.Show(response.Message, "Erro Login");
+                    return;
+                }
+
+                // sessão simples (ajuste conforme seu User real)
+                UserSession.Login(new User
+                {
+                    Cpf = txtCpf.Text
+                });
+
+                MessageBox.Show("Login realizado com sucesso!");
+
+                Hide();
+                new DashboardForm().Show();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro");
+                MessageBox.Show(ex.Message, "Erro Login");
             }
         }
     }
