@@ -44,7 +44,7 @@ namespace FraudDetection.Forms
                 FormStartPosition.CenterScreen;
 
             Text =
-                "Fraud Detection — Login";
+                "TravaPix — Login";
 
             Panel container =
                 new Panel
@@ -114,9 +114,6 @@ namespace FraudDetection.Forms
                     "Senha",
                     240
                 );
-
-            txtPassword.PasswordChar =
-                '*';
 
             container.Controls.Add(
                 txtCpf
@@ -248,8 +245,7 @@ namespace FraudDetection.Forms
                             y
                         ),
 
-                    Text =
-                        placeholder,
+                    Text = placeholder,
 
                     BackColor =
                         Color.FromArgb(
@@ -259,40 +255,63 @@ namespace FraudDetection.Forms
                         ),
 
                     ForeColor =
-                        Color.White
+                        Color.Gray,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            11
+                        ),
+
+                    BorderStyle =
+                        BorderStyle.FixedSingle
                 };
 
+            bool isPasswordField =
+                placeholder.Contains(
+                    "Senha"
+                );
+
             txt.GotFocus +=
-                (
-                    s,
-                    e
-                ) =>
-            {
-                if(
-                    txt.Text ==
-                    placeholder
-                )
+                (s,e)=>
                 {
-                    txt.Text = "";
-                }
-            };
+                    if(
+                        txt.Text ==
+                        placeholder
+                    )
+                    {
+                        txt.Text = "";
+
+                        txt.ForeColor =
+                            Color.White;
+
+                        if(isPasswordField)
+                        {
+                            txt.PasswordChar =
+                                '*';
+                        }
+                    }
+                };
 
             txt.LostFocus +=
-                (
-                    s,
-                    e
-                ) =>
-            {
-                if(
-                    string.IsNullOrWhiteSpace(
-                        txt.Text
-                    )
-                )
+                (s,e)=>
                 {
-                    txt.Text =
-                        placeholder;
-                }
-            };
+                    if(
+                        string.IsNullOrWhiteSpace(
+                            txt.Text
+                        )
+                    )
+                    {
+                        txt.PasswordChar =
+                            '\0';
+
+                        txt.Text =
+                            placeholder;
+
+                        txt.ForeColor =
+                            Color.Gray;
+                    }
+                };
 
             return txt;
         }

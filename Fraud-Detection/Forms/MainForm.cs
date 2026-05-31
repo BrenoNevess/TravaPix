@@ -100,7 +100,7 @@ namespace FraudDetection.Interface.Forms
                 new Label
                 {
                     Text =
-                        "FRAUD\nSYSTEM",
+                        "Trava\nPix",
 
                     ForeColor =
                         Color.FromArgb(

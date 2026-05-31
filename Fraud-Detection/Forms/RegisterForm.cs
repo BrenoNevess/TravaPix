@@ -12,11 +12,14 @@ namespace FraudDetection.Forms
         private TextBox txtCpf = null!;
         private TextBox txtEmail = null!;
         private TextBox txtPassword = null!;
+        private TextBox txtConfirmPassword = null!;
 
         private TextBox txtCardNumber = null!;
         private TextBox txtCvv = null!;
         private TextBox txtExpiry = null!;
         private TextBox txtLimit = null!;
+
+        private Label lblPasswordStatus = null!;
 
         private Button btnRegister = null!;
 
@@ -45,7 +48,7 @@ namespace FraudDetection.Forms
                     Size =
                         new Size(
                             900,
-                            1100
+                            1200
                         ),
 
                     BackColor =
@@ -56,23 +59,15 @@ namespace FraudDetection.Forms
                         )
                 };
 
-            Controls.Add(
-                container
-            );
+            Controls.Add(container);
 
             container.Location =
-                new Point(
-                    400,
-                    40
-                );
-
-            /*Titulo Principal*/
+                new Point(400, 40);
 
             Label lblTitle =
                 new Label
                 {
-                    Text =
-                        "CADASTRO",
+                    Text = "CADASTRO",
 
                     ForeColor =
                         Color.White,
@@ -90,15 +85,12 @@ namespace FraudDetection.Forms
                         new Point(
                             325,
                             40
-                            
                         )
                 };
 
             container.Controls.Add(
                 lblTitle
             );
-
-            /*Usuário*/
 
             Label userSection =
                 new Label
@@ -153,8 +145,39 @@ namespace FraudDetection.Forms
                     390
                 );
 
-            txtPassword.PasswordChar =
-                '*';
+            txtConfirmPassword =
+                CreateTextBox(
+                    "Confirmar Senha",
+                    470
+                );
+
+            txtPassword.TextChanged +=
+                ValidatePasswords;
+
+            txtConfirmPassword.TextChanged +=
+                ValidatePasswords;
+
+            lblPasswordStatus =
+                new Label
+                {
+                    AutoSize = true,
+
+                    ForeColor =
+                        Color.Gray,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            10,
+                            FontStyle.Bold
+                        ),
+
+                    Location =
+                        new Point(
+                            200,
+                            520
+                        )
+                };
 
             container.Controls.Add(
                 txtName
@@ -172,7 +195,13 @@ namespace FraudDetection.Forms
                 txtPassword
             );
 
-            /*Linha*/
+            container.Controls.Add(
+                txtConfirmPassword
+            );
+
+            container.Controls.Add(
+                lblPasswordStatus
+            );
 
             Panel divider =
                 new Panel
@@ -189,15 +218,13 @@ namespace FraudDetection.Forms
                     Location =
                         new Point(
                             120,
-                            470
+                            580
                         )
                 };
 
             container.Controls.Add(
                 divider
             );
-
-            /* Cartão */
 
             Label cardSection =
                 new Label
@@ -220,7 +247,7 @@ namespace FraudDetection.Forms
                     Location =
                         new Point(
                             305,
-                            510
+                            620
                         )
                 };
 
@@ -231,25 +258,25 @@ namespace FraudDetection.Forms
             txtCardNumber =
                 CreateTextBox(
                     "Número do Cartão",
-                    570
+                    680
                 );
 
             txtCvv =
                 CreateTextBox(
                     "CVV",
-                    650
+                    760
                 );
 
             txtExpiry =
                 CreateTextBox(
                     "MM/AA",
-                    730
+                    840
                 );
 
             txtLimit =
                 CreateTextBox(
                     "Limite do Cartão",
-                    810
+                    920
                 );
 
             container.Controls.Add(
@@ -268,8 +295,6 @@ namespace FraudDetection.Forms
                 txtLimit
             );
 
-            /*Botão*/
-
             btnRegister =
                 new Button
                 {
@@ -285,7 +310,7 @@ namespace FraudDetection.Forms
                     Location =
                         new Point(
                             200,
-                            920
+                            1030
                         ),
 
                     FlatStyle =
@@ -317,6 +342,46 @@ namespace FraudDetection.Forms
             );
         }
 
+        private void ValidatePasswords(
+            object? sender,
+            EventArgs e
+        )
+        {
+            if(
+                string.IsNullOrWhiteSpace(
+                    txtPassword.Text
+                )
+                ||
+                string.IsNullOrWhiteSpace(
+                    txtConfirmPassword.Text
+                )
+            )
+            {
+                lblPasswordStatus.Text = "";
+                return;
+            }
+
+            if(
+                txtPassword.Text ==
+                txtConfirmPassword.Text
+            )
+            {
+                lblPasswordStatus.Text =
+                    "✓ As senhas coincidem!";
+
+                lblPasswordStatus.ForeColor =
+                    Color.LimeGreen;
+            }
+            else
+            {
+                lblPasswordStatus.Text =
+                    "✗ As senhas precisam ser iguais!";
+
+                lblPasswordStatus.ForeColor =
+                    Color.Red;
+            }
+        }
+
         private TextBox CreateTextBox(
             string placeholder,
             int y
@@ -337,8 +402,7 @@ namespace FraudDetection.Forms
                             y
                         ),
 
-                    Text =
-                        placeholder,
+                    Text = placeholder,
 
                     BackColor =
                         Color.FromArgb(
@@ -348,7 +412,7 @@ namespace FraudDetection.Forms
                         ),
 
                     ForeColor =
-                        Color.White,
+                        Color.Gray,
 
                     Font =
                         new Font(
@@ -360,16 +424,29 @@ namespace FraudDetection.Forms
                         BorderStyle.FixedSingle
                 };
 
+            bool isPasswordField =
+                placeholder.Contains(
+                    "Senha"
+                );
+
             txt.GotFocus +=
                 (s,e)=>
                 {
                     if(
-                        txt.Text
-                        ==
+                        txt.Text ==
                         placeholder
                     )
                     {
-                        txt.Text="";
+                        txt.Text = "";
+
+                        txt.ForeColor =
+                            Color.White;
+
+                        if(isPasswordField)
+                        {
+                            txt.PasswordChar =
+                                '*';
+                        }
                     }
                 };
 
@@ -382,8 +459,14 @@ namespace FraudDetection.Forms
                         )
                     )
                     {
+                        txt.PasswordChar =
+                            '\0';
+
                         txt.Text =
                             placeholder;
+
+                        txt.ForeColor =
+                            Color.Gray;
                     }
                 };
 
@@ -395,6 +478,21 @@ namespace FraudDetection.Forms
             EventArgs e
         )
         {
+            if(
+                txtPassword.Text !=
+                txtConfirmPassword.Text
+            )
+            {
+                MessageBox.Show(
+                    "As senhas não coincidem.",
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning
+                );
+
+                return;
+            }
+
             bool validLimit =
                 decimal.TryParse(
                     txtLimit.Text,
@@ -404,10 +502,7 @@ namespace FraudDetection.Forms
             if(!validLimit)
             {
                 MessageBox.Show(
-                    "Limite inválido.",
-                    "Erro",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
+                    "Limite inválido."
                 );
 
                 return;
@@ -416,29 +511,14 @@ namespace FraudDetection.Forms
             var request =
                 new
                 {
-                    Name =
-                        txtName.Text,
-
-                    Cpf =
-                        txtCpf.Text,
-
-                    Email =
-                        txtEmail.Text,
-
-                    Password =
-                        txtPassword.Text,
-
-                    CardNumber =
-                        txtCardNumber.Text,
-
-                    CardCvv =
-                        txtCvv.Text,
-
-                    ExpiryDate =
-                        txtExpiry.Text,
-
-                    CreditLimit =
-                        limit
+                    Name = txtName.Text,
+                    Cpf = txtCpf.Text,
+                    Email = txtEmail.Text,
+                    Password = txtPassword.Text,
+                    CardNumber = txtCardNumber.Text,
+                    CardCvv = txtCvv.Text,
+                    ExpiryDate = txtExpiry.Text,
+                    CreditLimit = limit
                 };
 
             try
@@ -450,19 +530,13 @@ namespace FraudDetection.Forms
                         );
 
                 MessageBox.Show(
-                    response,
-                    "Cadastro",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Information
+                    response
                 );
             }
             catch(Exception ex)
             {
                 MessageBox.Show(
-                    ex.Message,
-                    "Erro",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Error
+                    ex.Message
                 );
             }
         }
