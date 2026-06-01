@@ -15,7 +15,7 @@ namespace FraudDetection.API.Services
             string riskLevel =
                 "SEGURA";
 
-            if (amount >= 10000)
+            if (amount >= 5000)
             {
                 riskLevel =
                     "ALTO RISCO";
@@ -24,7 +24,7 @@ namespace FraudDetection.API.Services
                     "Valor extremamente elevado!"
                 );
             }
-            else if (amount >= 5000)
+            else if (amount >= 1000)
             {
                 riskLevel =
                     "SUSPEITA";

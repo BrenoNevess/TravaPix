@@ -1,7 +1,7 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-
+using System.Text.RegularExpressions;
 using FraudDetection.Models;
 using FraudDetection.Services;
 using FraudDetection.Session;
@@ -108,6 +108,8 @@ namespace FraudDetection.Forms
                     "CPF",
                     140
                 );
+
+            txtCpf.TextChanged += FormatCpf;
 
             txtPassword =
                 CreateTextBox(
@@ -225,6 +227,62 @@ namespace FraudDetection.Forms
             );
         }
 
+        private void FormatCpf(
+            object? sender,
+            EventArgs e
+        )
+        {
+            string numbers =
+                Regex.Replace(
+                    txtCpf.Text,
+                    @"\D",
+                    ""
+                );
+
+            if(numbers.Length > 11)
+            {
+                numbers =
+                    numbers.Substring(
+                        0,
+                        11
+                    );
+            }
+
+            string formatted = "";
+
+            if(numbers.Length <= 3)
+            {
+                formatted = numbers;
+            }
+            else if(numbers.Length <= 6)
+            {
+                formatted =
+                    $"{numbers[..3]}.{numbers[3..]}";
+            }
+            else if(numbers.Length <= 9)
+            {
+                formatted =
+                    $"{numbers[..3]}.{numbers[3..6]}.{numbers[6..]}";
+            }
+            else
+            {
+                formatted =
+                    $"{numbers[..3]}.{numbers[3..6]}.{numbers[6..9]}-{numbers[9..]}";
+            }
+
+            txtCpf.TextChanged -=
+                FormatCpf;
+
+            txtCpf.Text =
+                formatted;
+
+            txtCpf.SelectionStart =
+                txtCpf.Text.Length;
+
+            txtCpf.TextChanged +=
+                FormatCpf;
+        }
+
         private TextBox CreateTextBox(
             string placeholder,
             int y
@@ -321,35 +379,23 @@ namespace FraudDetection.Forms
             EventArgs e
         )
         {
-            var request =
-                new
-                {
-                    Cpf =
-                        txtCpf.Text,
-
-                    Password =
-                        txtPassword.Text
-                };
-
             try
             {
                 LoginResponse response =
-                    await apiService
-                        .Login(
-                            request
-                        );
+                    await apiService.Login(
+                        new
+                        {
+                            Cpf =
+                                txtCpf.Text.Trim(),
 
-                if(
-                    !response.Success
-                )
-                {
-                    MessageBox.Show(
-                        response.Message,
-                        "Erro Login"
+                            Password =
+                                txtPassword.Text.Trim()
+                        }
                     );
 
-                    return;
-                }
+                    MessageBox.Show(
+                        "Login realizado com sucesso!"
+                    );
 
                 UserSession.Login(
                     new User
@@ -368,14 +414,10 @@ namespace FraudDetection.Forms
                     }
                 );
 
-                MessageBox.Show(
-                    $"Bem-vindo {response.Name}"
-                );
-
-                MainForm.Instance!
+                MainForm.Instance?
                     .UpdateAuthUI();
 
-                MainForm.Instance!
+                MainForm.Instance?
                     .OpenDashboard();
             }
             catch(Exception ex)

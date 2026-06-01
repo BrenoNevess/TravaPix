@@ -64,7 +64,7 @@ namespace FraudDetection.Interface.Components
 
                 Font = new Font(
                     "Segoe UI",
-                    34,
+                    24,
                     FontStyle.Bold
                 ),
 

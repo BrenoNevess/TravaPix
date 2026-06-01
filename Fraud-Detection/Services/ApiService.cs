@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Net.Http.Json;
 
 using FraudDetection.Models;
 
@@ -21,41 +22,32 @@ namespace FraudDetection.Services
                 );
         }
 
-        public async Task<string>
-            Register(
-                object data
-            )
+        public async Task<string> Register(
+            object request
+        )
         {
-            StringContent content =
-                new StringContent(
-                    JsonSerializer.Serialize(
-                        data
-                    ),
-                    Encoding.UTF8,
-                    "application/json"
-                );
-
             HttpResponseMessage response =
-                await client.PostAsync(
-                    "auth/register",
-                    content
+                await client.PostAsJsonAsync(
+                    "/api/auth/register",
+                    request
                 );
 
-            return await response
-                .Content
-                .ReadAsStringAsync();
+            string content =
+                await response.Content
+                    .ReadAsStringAsync();
+
+            MessageBox.Show(
+                $"STATUS: {response.StatusCode}\n\n{content}"
+            );
+
+            return content;
         }
 
-        public async Task<LoginResponse>
-            Login(
-                object data
-            )
+            public async Task<LoginResponse> Login(object data)
         {
             StringContent content =
                 new StringContent(
-                    JsonSerializer.Serialize(
-                        data
-                    ),
+                    JsonSerializer.Serialize(data),
                     Encoding.UTF8,
                     "application/json"
                 );
@@ -67,22 +59,23 @@ namespace FraudDetection.Services
                 );
 
             string json =
-                await response
-                    .Content
+                await response.Content
                     .ReadAsStringAsync();
 
-            return JsonSerializer
-                .Deserialize
-                <
-                    LoginResponse
-                >(
-                    json,
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive =
-                            true
-                    }
-                )!;
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new Exception(
+                    $"Erro API: {json}"
+                );
+            }
+
+            return JsonSerializer.Deserialize<LoginResponse>(
+                json,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            )!;
         }
 
         public async Task<string>

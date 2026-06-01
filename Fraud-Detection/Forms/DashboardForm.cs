@@ -86,9 +86,8 @@ namespace FraudDetection.Interface.Forms
                 new DashboardCard(
                     "Usuário",
 
-                    UserSession
-                        .CurrentUser?
-                        .Name
+                    UserSession.CurrentUser?.Name
+                    .Split(' ')[0]
                     ??
                     "Desconhecido",
 

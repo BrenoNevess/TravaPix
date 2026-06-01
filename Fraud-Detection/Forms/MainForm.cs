@@ -49,7 +49,7 @@ namespace FraudDetection.Interface.Forms
         private void InitializeForm()
         {
             Text =
-                "Fraud Detection System";
+                "TravaPix - Sistema de Detecção de Fraudes em Transações Financeiras";
 
             Size =
                 new Size(
@@ -401,6 +401,8 @@ namespace FraudDetection.Interface.Forms
 
         public void OpenDashboard()
         {
+            UpdateAuthUI();
+
             lblTitle.Text =
                 "Dashboard";
 

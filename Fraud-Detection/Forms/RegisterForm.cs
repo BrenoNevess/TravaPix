@@ -1,8 +1,11 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
-
+using System.Text.RegularExpressions;
 using FraudDetection.Services;
+using FraudDetection.Models;
+using FraudDetection.Session;
+using FraudDetection.Interface.Forms;
 
 namespace FraudDetection.Forms
 {
@@ -20,6 +23,8 @@ namespace FraudDetection.Forms
         private TextBox txtLimit = null!;
 
         private Label lblPasswordStatus = null!;
+
+        private Label lblEmailStatus = null!;
 
         private Button btnRegister = null!;
 
@@ -133,11 +138,15 @@ namespace FraudDetection.Forms
                     230
                 );
 
+            txtCpf.TextChanged += FormatCpf;
+
             txtEmail =
                 CreateTextBox(
                     "Email",
                     310
                 );
+
+            txtEmail.TextChanged += ValidateEmail;
 
             txtPassword =
                 CreateTextBox(
@@ -156,6 +165,28 @@ namespace FraudDetection.Forms
 
             txtConfirmPassword.TextChanged +=
                 ValidatePasswords;
+
+                lblEmailStatus =
+                new Label
+                {
+                    AutoSize = true,
+
+                    ForeColor =
+                        Color.Gray,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            10,
+                            FontStyle.Bold
+                        ),
+
+                    Location =
+                        new Point(
+                            200,
+                            340
+                        )
+                };
 
             lblPasswordStatus =
                 new Label
@@ -189,6 +220,10 @@ namespace FraudDetection.Forms
 
             container.Controls.Add(
                 txtEmail
+            );
+
+            container.Controls.Add(
+                lblEmailStatus
             );
 
             container.Controls.Add(
@@ -260,6 +295,9 @@ namespace FraudDetection.Forms
                     "Número do Cartão",
                     680
                 );
+
+                txtCardNumber.TextChanged += FormatCardNumber;
+                
 
             txtCvv =
                 CreateTextBox(
@@ -342,6 +380,116 @@ namespace FraudDetection.Forms
             );
         }
 
+        private void FormatCpf(
+            object? sender,
+            EventArgs e
+        )
+        {
+            string numbers =
+                Regex.Replace(
+                    txtCpf.Text,
+                    @"\D",
+                    ""
+                );
+
+            if(numbers.Length > 11)
+            {
+                numbers =
+                    numbers.Substring(
+                        0,
+                        11
+                    );
+            }
+
+            string formatted = "";
+
+            if(numbers.Length <= 3)
+            {
+                formatted = numbers;
+            }
+            else if(numbers.Length <= 6)
+            {
+                formatted =
+                    $"{numbers[..3]}.{numbers[3..]}";
+            }
+            else if(numbers.Length <= 9)
+            {
+                formatted =
+                    $"{numbers[..3]}.{numbers[3..6]}.{numbers[6..]}";
+            }
+            else
+            {
+                formatted =
+                    $"{numbers[..3]}.{numbers[3..6]}.{numbers[6..9]}-{numbers[9..]}";
+            }
+
+            txtCpf.TextChanged -=
+                FormatCpf;
+
+            txtCpf.Text =
+                formatted;
+
+            txtCpf.SelectionStart =
+                txtCpf.Text.Length;
+
+            txtCpf.TextChanged +=
+                FormatCpf;
+        }
+
+        private void FormatCardNumber(
+            object? sender,
+            EventArgs e
+        )
+        {
+            string numbers =
+                Regex.Replace(
+                    txtCardNumber.Text,
+                    @"\D",
+                    ""
+                );
+
+            if(numbers.Length > 16)
+                numbers =
+                    numbers.Substring(
+                        0,
+                        16
+                    );
+
+            string formatted =
+                "";
+
+            for(
+                int i = 0;
+                i < numbers.Length;
+                i++
+            )
+            {
+                if(
+                    i > 0
+                    &&
+                    i % 4 == 0
+                )
+                {
+                    formatted += " ";
+                }
+
+                formatted +=
+                    numbers[i];
+            }
+
+            txtCardNumber.TextChanged -=
+                FormatCardNumber;
+
+            txtCardNumber.Text =
+                formatted;
+
+            txtCardNumber.SelectionStart =
+                txtCardNumber.Text.Length;
+
+            txtCardNumber.TextChanged +=
+                FormatCardNumber;
+        }
+
         private void ValidatePasswords(
             object? sender,
             EventArgs e
@@ -378,6 +526,49 @@ namespace FraudDetection.Forms
                     "✗ As senhas precisam ser iguais!";
 
                 lblPasswordStatus.ForeColor =
+                    Color.Red;
+            }
+        }
+
+        private void ValidateEmail(
+            object? sender,
+            EventArgs e
+        )
+        {
+            string email =
+                txtEmail.Text.Trim();
+
+            if(
+                string.IsNullOrWhiteSpace(
+                    email
+                )
+                ||
+                email == "Email"
+            )
+            {
+                lblEmailStatus.Text = "";
+                return;
+            }
+
+            bool valid =
+                email.Contains("@")
+                &&
+                email.Contains(".");
+
+            if(valid)
+            {
+                lblEmailStatus.Text =
+                    "✓ Email válido!";
+
+                lblEmailStatus.ForeColor =
+                    Color.LimeGreen;
+            }
+            else
+            {
+                lblEmailStatus.Text =
+                    "✗ O email precisa ser válido!";
+
+                lblEmailStatus.ForeColor =
                     Color.Red;
             }
         }
@@ -478,28 +669,13 @@ namespace FraudDetection.Forms
             EventArgs e
         )
         {
-            if(
-                txtPassword.Text !=
-                txtConfirmPassword.Text
-            )
-            {
-                MessageBox.Show(
-                    "As senhas não coincidem.",
-                    "Erro",
-                    MessageBoxButtons.OK,
-                    MessageBoxIcon.Warning
-                );
-
-                return;
-            }
-
             bool validLimit =
                 decimal.TryParse(
                     txtLimit.Text,
                     out decimal limit
                 );
 
-            if(!validLimit)
+            if (!validLimit)
             {
                 MessageBox.Show(
                     "Limite inválido."
@@ -508,35 +684,92 @@ namespace FraudDetection.Forms
                 return;
             }
 
-            var request =
-                new
-                {
-                    Name = txtName.Text,
-                    Cpf = txtCpf.Text,
-                    Email = txtEmail.Text,
-                    Password = txtPassword.Text,
-                    CardNumber = txtCardNumber.Text,
-                    CardCvv = txtCvv.Text,
-                    ExpiryDate = txtExpiry.Text,
-                    CreditLimit = limit
-                };
+            if(
+                txtPassword.Text !=
+                txtConfirmPassword.Text
+            )
+            {
+                MessageBox.Show(
+                    "As senhas precisam ser iguais!"
+                );
+
+                return;
+            }
+
+            var request = new
+            {
+                Name = txtName.Text.Trim(),
+                Cpf = txtCpf.Text.Trim(),
+                Email = txtEmail.Text.Trim(),
+                Password = txtPassword.Text,
+                ConfirmPassword = txtConfirmPassword.Text,
+
+                CardNumber = txtCardNumber.Text.Trim(),
+
+                CardCvv = txtCvv.Text.Trim(),
+
+                ExpiryDate = txtExpiry.Text.Trim(),
+
+                CreditLimit = limit
+            };
 
             try
             {
-                string response =
-                    await apiService
-                        .Register(
-                            request
-                        );
+                // Cadastro
+                await apiService.Register(
+                    request
+                );
+
+                // Login automatico
+                LoginResponse loginResponse =
+                    await apiService.Login(
+                        new
+                        {
+                            Cpf =
+                                txtCpf.Text.Trim(),
+
+                            Password =
+                                txtPassword.Text.Trim()
+                        }
+                    );
+
+                if(!loginResponse.Success)
+                {
+                    MessageBox.Show(
+                        loginResponse.Message,
+                        "Erro Login"
+                    );
+
+                    return;
+                }
+
+                // Cria sessão
+                UserSession.Login(
+                    new User
+                    {
+                        Cpf =
+                            txtCpf.Text.Trim()
+                    }
+                );
 
                 MessageBox.Show(
-                    response
+                    "Cadastro realizado com sucesso!"
                 );
+
+                Hide();
+
+                MainForm main =
+                    new MainForm();
+
+                main.Show();
             }
             catch(Exception ex)
             {
                 MessageBox.Show(
-                    ex.Message
+                    ex.Message,
+                    "Erro",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error
                 );
             }
         }

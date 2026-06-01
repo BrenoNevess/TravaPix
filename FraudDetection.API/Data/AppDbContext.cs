@@ -33,9 +33,7 @@ namespace FraudDetection.API.Data
                 modelBuilder
             );
 
-            // =========================
             // USERS
-            // =========================
 
             modelBuilder
                 .Entity<User>()
@@ -86,10 +84,7 @@ namespace FraudDetection.API.Data
                 )
                 .IsUnique();
 
-
-            // =========================
             // CARDS
-            // =========================
 
             modelBuilder
                 .Entity<Card>()
@@ -140,10 +135,7 @@ namespace FraudDetection.API.Data
                     DeleteBehavior.Cascade
                 );
 
-
-            // =========================
             // TRANSACTIONS
-            // =========================
 
             modelBuilder
                 .Entity<Transaction>()
