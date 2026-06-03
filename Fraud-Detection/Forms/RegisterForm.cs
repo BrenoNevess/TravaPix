@@ -322,7 +322,25 @@ namespace FraudDetection.Forms
                 }
 
                 // Cria sessão
-                UserSession.Login(new User { Cpf = txtCpf.Text.Trim() });
+                UserSession.Login(
+                new User
+                {
+                    Name =
+                        loginResponse.Name,
+
+                    Cpf =
+                        loginResponse.Cpf,
+
+                    Email =
+                        loginResponse.Email,
+
+                    Role =
+                        loginResponse.Role,
+
+                    CreditLimit =
+                        loginResponse.CreditLimit
+                }
+            );
 
                 MessageBox.Show("Cadastro realizado com sucesso!");
                 Hide();

@@ -5,6 +5,7 @@ using System.Windows.Forms;
 
 using FraudDetection.Models;
 using FraudDetection.Services;
+using FraudDetection.Session;
 
 namespace FraudDetection.Forms
 {
@@ -58,7 +59,7 @@ namespace FraudDetection.Forms
             Controls.Add(container);
 
             container.Location =
-                new Point(250, 100);
+                new Point(250,100);
 
             Label lblTitle =
                 new Label
@@ -174,17 +175,22 @@ namespace FraudDetection.Forms
             {
                 dgvHistory.Rows.Clear();
 
+                string cpf =
+                    UserSession
+                        .CurrentUser!
+                        .Cpf;
+
                 string json =
                     await apiService
-                        .GetTransactions();
+                        .GetUserTransactions(
+                            cpf
+                        );
 
                 List<TransactionResponse>?
                     transactions =
                         JsonSerializer
                             .Deserialize<
-                                List<
-                                    TransactionResponse
-                                >
+                                List<TransactionResponse>
                             >(
                                 json,
                                 new JsonSerializerOptions
@@ -202,8 +208,7 @@ namespace FraudDetection.Forms
                 }
 
                 foreach(
-                    TransactionResponse
-                        transaction
+                    TransactionResponse transaction
                     in transactions
                 )
                 {
@@ -212,7 +217,7 @@ namespace FraudDetection.Forms
 
                         transaction.ReceiverCpf,
 
-                        $"R$ {transaction.Amount}",
+                        $"R$ {transaction.Amount:N2}",
 
                         transaction.Location,
 

@@ -410,7 +410,10 @@ namespace FraudDetection.Forms
                             response.Email,
 
                         Role =
-                            response.Role
+                            response.Role,
+                        
+                        CreditLimit = 
+                            response.CreditLimit
                     }
                 );
 

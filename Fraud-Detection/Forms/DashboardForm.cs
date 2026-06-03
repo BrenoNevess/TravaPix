@@ -13,19 +13,17 @@ namespace FraudDetection.Interface.Forms
     {
         private DashboardCard cardUser = null!;
         private DashboardCard cardTransactions = null!;
-        private DashboardCard cardFrauds = null!;
+        private DashboardCard cardBalance = null!;
 
         private readonly ApiService
-            apiService =
-                new();
+            apiService = new();
 
         public DashboardForm()
         {
             InitializeDashboard();
         }
 
-        private async void
-            InitializeDashboard()
+        private async void InitializeDashboard()
         {
             BackColor =
                 Color.FromArgb(18,18,18);
@@ -42,13 +40,12 @@ namespace FraudDetection.Interface.Forms
                         ),
 
                     BackColor =
-                        Color.Transparent,
-
-                    Anchor =
-                        AnchorStyles.None
+                        Color.Transparent
                 };
 
-            Controls.Add(container);
+            Controls.Add(
+                container
+            );
 
             container.Location =
                 new Point(-300,-200);
@@ -86,8 +83,9 @@ namespace FraudDetection.Interface.Forms
                 new DashboardCard(
                     "Usuário",
 
-                    UserSession.CurrentUser?.Name
-                    .Split(' ')[0]
+                    UserSession.CurrentUser?
+                        .Name
+                        .Split(' ')[0]
                     ??
                     "Desconhecido",
 
@@ -116,19 +114,19 @@ namespace FraudDetection.Interface.Forms
             cardTransactions.Location =
                 new Point(390,100);
 
-            cardFrauds =
+            cardBalance =
                 new DashboardCard(
-                    "Suspeitas",
-                    "0",
+                    "Saldo Atual",
+                    "R$ 0,00",
 
                     Color.FromArgb(
-                        220,
-                        53,
-                        69
+                        255,
+                        193,
+                        7
                     )
                 );
 
-            cardFrauds.Location =
+            cardBalance.Location =
                 new Point(760,100);
 
             container.Controls.Add(
@@ -140,100 +138,13 @@ namespace FraudDetection.Interface.Forms
             );
 
             container.Controls.Add(
-                cardFrauds
-            );
-
-            Panel chartPanel =
-                new Panel
-                {
-                    Size =
-                        new Size(
-                            1020,
-                            350
-                        ),
-
-                    Location =
-                        new Point(
-                            20,
-                            320
-                        ),
-
-                    BackColor =
-                        Color.FromArgb(
-                            28,
-                            28,
-                            28
-                        )
-                };
-
-            container.Controls.Add(
-                chartPanel
-            );
-
-            Label lblChart =
-                new Label
-                {
-                    Text =
-                        "Monitoramento Pessoal",
-
-                    ForeColor =
-                        Color.White,
-
-                    Font =
-                        new Font(
-                            "Segoe UI",
-                            16,
-                            FontStyle.Bold
-                        ),
-
-                    AutoSize =
-                        true,
-
-                    Location =
-                        new Point(
-                            20,
-                            20
-                        )
-                };
-
-            chartPanel.Controls.Add(
-                lblChart
-            );
-
-            Label lblInfo =
-                new Label
-                {
-                    Text =
-                        "Dados sincronizados com a API.",
-
-                    ForeColor =
-                        Color.Gray,
-
-                    Font =
-                        new Font(
-                            "Segoe UI",
-                            12
-                        ),
-
-                    AutoSize =
-                        true,
-
-                    Location =
-                        new Point(
-                            20,
-                            80
-                        )
-                };
-
-            chartPanel.Controls.Add(
-                lblInfo
+                cardBalance
             );
 
             await LoadDashboardData();
         }
 
-        private async Task
-            LoadDashboardData()
+        private async Task LoadDashboardData()
         {
             try
             {
@@ -250,47 +161,65 @@ namespace FraudDetection.Interface.Forms
 
                 List<TransactionResponse>?
                     transactions =
-                        JsonSerializer
-                            .Deserialize
-                            <
-                                List<TransactionResponse>
-                            >(
-                                json,
-                                new JsonSerializerOptions
-                                {
-                                    PropertyNameCaseInsensitive =
-                                        true
-                                }
-                            );
+                        JsonSerializer.Deserialize
+                        <
+                            List<TransactionResponse>
+                        >(
+                            json,
+                            new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive =
+                                    true
+                            }
+                        );
 
                 int total =
-                    transactions?
-                        .Count
+                    transactions?.Count
                     ??
                     0;
 
-                int suspicious =
-                    transactions?
-                        .Count(
-                            t =>
-                                t.RiskLevel
-                                    .ToString()
-                                !=
-                                "Safe"
+                decimal balance =
+                    UserSession
+                        .CurrentUser!
+                        .CreditLimit;
+
+                if(
+                    transactions != null
+                )
+                {
+                    foreach(
+                        var t
+                        in transactions
+                    )
+                    {
+                        if(
+                            t.SenderCpf ==
+                            cpf
                         )
-                    ??
-                    0;
+                        {
+                            balance -=
+                                t.Amount;
+                        }
+
+                        if(
+                            t.ReceiverCpf ==
+                            cpf
+                        )
+                        {
+                            balance +=
+                                t.Amount;
+                        }
+                    }
+                }
 
                 cardTransactions
                     .UpdateValue(
-                        total
-                            .ToString()
+                        total.ToString()
                     );
 
-                cardFrauds
+                cardBalance
                     .UpdateValue(
-                        suspicious
-                            .ToString()
+                        $"R$ {balance:N2}"
                     );
             }
             catch(Exception ex)

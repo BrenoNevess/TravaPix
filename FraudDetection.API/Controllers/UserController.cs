@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using FraudDetection.API.Data;
 using FraudDetection.API.DTOs;
 using FraudDetection.API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace FraudDetection.API.Controllers
 {
@@ -203,6 +204,28 @@ namespace FraudDetection.API.Controllers
                     message =
                         "Usuário removido."
                 }
+            );
+        }
+
+        [HttpGet("credit/{cpf}")]
+        public async Task<IActionResult>
+        GetAvailableCredit(string cpf)
+        {
+            var card =
+                await _context.Cards
+                    .Include(c => c.User)
+                    .FirstOrDefaultAsync(
+                        c =>
+                            c.User.Cpf == cpf
+                    );
+
+            if(card == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(
+                card.CreditLimit
             );
         }
     }

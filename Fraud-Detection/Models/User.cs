@@ -10,6 +10,10 @@ namespace FraudDetection.Models
 
         public string Password { get; set; } = "";
 
+        public decimal CreditLimit { get; set; }
+        
+        public string Location { get; set; } = "";
+
         public string Role { get; set; } = "USER";
 
         public Card Card { get; set; } = new();

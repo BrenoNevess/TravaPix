@@ -12,6 +12,8 @@ namespace FraudDetection.Models
 
         public string Email { get; set; } = "";
 
+        public decimal CreditLimit { get; set; }
+
         public string Role { get; set; } = "";
     }
 }

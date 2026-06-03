@@ -12,6 +12,8 @@ namespace FraudDetection.API.Models
 
         public string? Location { get; set; }
 
+        public decimal? CreditLimit { get; set; }
+
         public string Password { get; set; } = "";
 
         public string Role { get; set; } = "USER";

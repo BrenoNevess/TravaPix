@@ -33,8 +33,7 @@ namespace FraudDetection.API.Data
                 .Entity<User>()
                 .Property(u => u.Email)
                 .HasMaxLength(255);
-
-            // Configuração da nova propriedade Location
+                
             modelBuilder
                 .Entity<User>()
                 .Property(u => u.Location)

@@ -143,5 +143,21 @@ namespace FraudDetection.Services
                 .Content
                 .ReadAsStringAsync();
         }
+
+        public async Task<decimal>
+        GetCreditLimit(string cpf)
+        {
+            HttpResponseMessage response =
+                await client.GetAsync(
+                    $"card/credit/{cpf}"
+                );
+
+            string json =
+                await response
+                    .Content
+                    .ReadAsStringAsync();
+
+            return decimal.Parse(json); 
+        }
     }
 }

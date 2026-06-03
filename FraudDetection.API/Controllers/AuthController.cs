@@ -99,11 +99,14 @@ namespace FraudDetection.API.Controllers
                 );
             }
 
+            Guid userId = Guid.NewGuid();
+
             Card card =
                 new Card
                 {
-                    Id =
-                        Guid.NewGuid(),
+                    Id = Guid.NewGuid(),
+
+                    UserId = userId,
 
                     CardNumber =
                         request.CardNumber,
@@ -117,30 +120,27 @@ namespace FraudDetection.API.Controllers
                     UsedLimit = 0
                 };
 
-            User user =
-                new User
-                {
-                    Id =
-                        Guid.NewGuid(),
+        User user =
+            new User
+            {
+                Id = userId,
 
-                    Name =
-                        request.Name,
+                Name =
+                    request.Name,
 
-                    Cpf =
-                        request.Cpf,
+                Cpf =
+                    request.Cpf,
 
-                    Email =
-                        request.Email,
+                Email =
+                    request.Email,
 
-                    Password =
-                        request.Password,
+                Password =
+                    request.Password,
 
-                    Role =
-                        "USER",
+                Role = "USER",
 
-                    Card =
-                        card
-                };
+                Card = card
+            };
 
             _context.Users.Add(
                 user
@@ -148,15 +148,18 @@ namespace FraudDetection.API.Controllers
 
             _context.SaveChanges();
 
-            return Ok(
-                new
-                {
-                    success = true,
-
-                    message =
-                        "Usuário cadastrado com sucesso."
-                }
-            );
+            return Ok(new
+            {
+                success=true,
+                name=user.Name,
+                cpf=user.Cpf,
+                email=user.Email,
+                role=user.Role,
+                CreditLimit =
+                user.Card != null
+                ? user.Card.CreditLimit
+                : 0
+            });
         }
 
         [HttpPost("login")]
