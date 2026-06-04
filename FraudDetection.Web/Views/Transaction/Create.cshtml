@@ -1,0 +1,98 @@
+@model TransactionViewModel
+@{
+    ViewData["Title"] = "Nova Transação";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/transaction.css" asp-append-version="true" />
+}
+
+<div class="tx-grid">
+    <div class="panel">
+        <div class="panel-head">
+            <h3>Processar transação</h3>
+        </div>
+
+        <form asp-controller="Transaction" asp-action="Create" method="post" novalidate>
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <div class="grid-2">
+                <div class="field">
+                    <label asp-for="SenderCpf"></label>
+                    <input asp-for="SenderCpf" class="input" data-mask="cpf" inputmode="numeric" placeholder="000.000.000-00" />
+                    <span asp-validation-for="SenderCpf" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverCpf"></label>
+                    <input asp-for="ReceiverCpf" class="input" data-mask="cpf" inputmode="numeric" placeholder="000.000.000-00" />
+                    <span asp-validation-for="ReceiverCpf" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Amount"></label>
+                    <input asp-for="Amount" class="input" type="number" step="0.01" min="0" placeholder="0,00" />
+                    <span asp-validation-for="Amount" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Location"></label>
+                    <input asp-for="Location" class="input" placeholder="Cidade / Estado" />
+                    <span asp-validation-for="Location" class="field-error"></span>
+                </div>
+                <div class="field field-full">
+                    <label asp-for="Description"></label>
+                    <input asp-for="Description" class="input" placeholder="Descrição da transação" />
+                    <span asp-validation-for="Description" class="field-error"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Processar transação</button>
+        </form>
+    </div>
+
+    <div class="panel result-panel">
+        <div class="panel-head">
+            <h3>Resultado da análise</h3>
+        </div>
+
+        @if (Model.Result is null)
+        {
+            <div class="result-empty">
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                <p>Preencha os dados e processe uma transação para ver a análise de risco.</p>
+            </div>
+        }
+        else
+        {
+            <div class="result-risk @Model.Result.RiskLevel.ToBadgeClass()">
+                <span class="result-risk-label">Nível de risco</span>
+                <span class="result-risk-value">@Model.Result.RiskLevel.ToPortuguese()</span>
+            </div>
+
+            <ul class="result-meta">
+                <li><span>Valor</span><strong>R$ @Model.Result.Amount.ToString("N2")</strong></li>
+                <li><span>Processada em</span><strong>@Model.Result.CreatedAt.ToString("dd/MM/yyyy HH:mm")</strong></li>
+            </ul>
+
+            @if (Model.Result.Alerts.Count > 0)
+            {
+                <div class="result-alerts">
+                    <h4>Alertas</h4>
+                    <ul>
+                        @foreach (string alert in Model.Result.Alerts)
+                        {
+                            <li>@alert</li>
+                        }
+                    </ul>
+                </div>
+            }
+            else
+            {
+                <p class="result-ok">Nenhum alerta. Transação dentro do padrão esperado.</p>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,43 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+    Layout = "_AuthLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+}
+
+<div class="auth-card">
+    <h2 class="auth-title">Acessar sua conta</h2>
+    <p class="auth-subtitle">Entre para monitorar suas transações.</p>
+
+    <form asp-controller="Account" asp-action="Login" method="post" novalidate>
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="validation-summary"></div>
+
+        <div class="field">
+            <label asp-for="Cpf"></label>
+            <input asp-for="Cpf" class="input" data-mask="cpf" inputmode="numeric"
+                   autocomplete="username" placeholder="000.000.000-00" />
+            <span asp-validation-for="Cpf" class="field-error"></span>
+        </div>
+
+        <div class="field">
+            <label asp-for="Password"></label>
+            <input asp-for="Password" class="input" type="password"
+                   autocomplete="current-password" placeholder="Sua senha" />
+            <span asp-validation-for="Password" class="field-error"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+    </form>
+
+    <p class="auth-switch">
+        Não tem conta? <a href="@Url.Action("Register", "Account")">Criar conta</a>
+    </p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

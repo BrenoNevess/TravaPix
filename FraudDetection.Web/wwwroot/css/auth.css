@@ -1,0 +1,76 @@
+/* Layout centralizado para Login, Cadastro, Início e Erro */
+.auth-body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 32px 18px;
+    background:
+        radial-gradient(900px 500px at 15% -10%, rgba(25, 195, 125, .12), transparent 60%),
+        radial-gradient(800px 500px at 100% 0%, rgba(15, 181, 186, .10), transparent 55%),
+        var(--bg);
+}
+
+.auth-wrapper {
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 22px;
+}
+
+.auth-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--text);
+}
+.auth-brand:hover { text-decoration: none; }
+.auth-brand .brand-shield {
+    display: grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    background: var(--safe-soft);
+    color: var(--accent);
+}
+.auth-brand .brand-name { font-size: 26px; font-weight: 600; letter-spacing: -.02em; }
+.auth-brand .brand-name strong { color: var(--accent); }
+
+.auth-card {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+    padding: 34px;
+}
+.auth-card-wide { max-width: 720px; }
+
+.auth-title { font-size: 23px; margin-bottom: 6px; }
+.auth-subtitle { color: var(--muted); margin: 0 0 24px; font-size: 14.5px; }
+
+.auth-switch {
+    text-align: center;
+    margin: 20px 0 0;
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.auth-footnote {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    color: var(--muted-2);
+    font-size: 12.5px;
+    margin: 0;
+}
+
+.error-icon { color: var(--danger); display: flex; justify-content: center; margin-bottom: 8px; }
+.error-request { color: var(--muted); font-size: 13px; margin: 0 0 18px; }
+.error-request code { color: var(--text); }
+
+/* Quando a auth-card precisa ser mais larga (cadastro), alarga o wrapper */
+.auth-wrapper:has(.auth-card-wide) { max-width: 760px; }

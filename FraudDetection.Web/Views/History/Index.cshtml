@@ -1,0 +1,54 @@
+@model HistoryViewModel
+@{
+    ViewData["Title"] = "Histórico";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/history.css" asp-append-version="true" />
+}
+
+<div class="panel">
+    <div class="panel-head">
+        <h3>Histórico de transações</h3>
+        <span class="count-pill">@Model.Transactions.Count no total</span>
+    </div>
+
+    @if (Model.Transactions.Count == 0)
+    {
+        <div class="empty">Você ainda não realizou transações.
+            <a href="@Url.Action("Create", "Transaction")">Criar transação</a>.
+        </div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Remetente</th>
+                        <th>Destinatário</th>
+                        <th>Valor</th>
+                        <th>Local</th>
+                        <th>Descrição</th>
+                        <th>Risco</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Transaction t in Model.Transactions)
+                    {
+                        <tr>
+                            <td>@t.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@t.SenderCpf</td>
+                            <td>@t.ReceiverCpf</td>
+                            <td>R$ @t.Amount.ToString("N2")</td>
+                            <td>@(string.IsNullOrWhiteSpace(t.Location) ? "—" : t.Location)</td>
+                            <td>@(string.IsNullOrWhiteSpace(t.Description) ? "—" : t.Description)</td>
+                            <td><span class="badge @t.RiskLevel.ToBadgeClass()">@t.RiskLevel.ToPortuguese()</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
