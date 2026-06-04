@@ -15,9 +15,6 @@ namespace FraudDetection.Interface.Forms
             InitializeFraudForm();
 
             LoadFrauds();
-
-            EventBus.OnDataChanged +=
-                RefreshFrauds;
         }
 
         private void InitializeFraudForm()

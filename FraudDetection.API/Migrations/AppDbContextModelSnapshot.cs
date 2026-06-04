@@ -37,10 +37,6 @@ namespace FraudDetection.API.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Cvv")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
                     b.Property<string>("ExpiryDate")
                         .IsRequired()
                         .HasMaxLength(5)
@@ -113,8 +109,15 @@ namespace FraudDetection.API.Migrations
                         .HasMaxLength(14)
                         .HasColumnType("varchar(14)");
 
+                    b.Property<decimal>("CreditLimit")
+                        .HasColumnType("decimal(65,30)");
+
                     b.Property<string>("Email")
                         .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("Location")
                         .HasMaxLength(255)
                         .HasColumnType("varchar(255)");
 

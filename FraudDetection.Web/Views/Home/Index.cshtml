@@ -1,0 +1,47 @@
+@{
+    ViewData["Title"] = "Início";
+    Layout = "_AuthLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" asp-append-version="true" />
+}
+
+<div class="landing">
+    <span class="landing-tag">Segurança financeira em tempo real</span>
+    <h1 class="landing-title">Proteja cada transação contra fraudes</h1>
+    <p class="landing-subtitle">
+        O TravaPix analisa o risco de cada operação financeira — valor, horário e padrão —
+        e classifica automaticamente como <strong>segura</strong>, <strong>suspeita</strong> ou
+        de <strong>alto risco</strong>.
+    </p>
+
+    <div class="landing-actions">
+        <a class="btn btn-primary" href="@Url.Action("Login", "Account")">Entrar</a>
+        <a class="btn btn-ghost" href="@Url.Action("Register", "Account")">Criar conta</a>
+    </div>
+
+    <div class="landing-features">
+        <div class="feature">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            </div>
+            <h3>Análise automática</h3>
+            <p>Cada transação recebe um nível de risco no momento em que é processada.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            </div>
+            <h3>Dados protegidos</h3>
+            <p>Senhas armazenadas com hash e acesso autenticado por sessão segura.</p>
+        </div>
+        <div class="feature">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <h3>Painel completo</h3>
+            <p>Acompanhe saldo, histórico e alertas de fraude em um só lugar.</p>
+        </div>
+    </div>
+</div>

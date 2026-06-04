@@ -1,0 +1,24 @@
+@model ErrorViewModel
+@{
+    ViewData["Title"] = "Erro";
+    Layout = "_AuthLayout";
+}
+
+<div class="auth-card">
+    <div class="error-icon">
+        <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <h2 class="auth-title">Algo deu errado</h2>
+    <p class="auth-subtitle">
+        @(string.IsNullOrWhiteSpace(Model.Message)
+            ? "Ocorreu um erro ao processar a sua solicitação."
+            : Model.Message)
+    </p>
+
+    @if (Model.ShowRequestId)
+    {
+        <p class="error-request">Código: <code>@Model.RequestId</code></p>
+    }
+
+    <a class="btn btn-primary btn-block" href="@Url.Action("Index", "Home")">Voltar ao início</a>
+</div>

@@ -1,7 +1,11 @@
 using System;
 using System.Drawing;
 using System.Windows.Forms;
+using System.Text.RegularExpressions;
+using FraudDetection.Models;
 using FraudDetection.Services;
+using FraudDetection.Session;
+using FraudDetection.Interface.Forms;
 
 namespace FraudDetection.Forms
 {
@@ -9,9 +13,12 @@ namespace FraudDetection.Forms
     {
         private TextBox txtCpf = null!;
         private TextBox txtPassword = null!;
-        private Button btnLogin = null!;
 
-        private readonly ApiService apiService = new();
+        private Button btnLogin = null!;
+        private Button btnRegister = null!;
+
+        private readonly ApiService
+            apiService = new();
 
         public LoginForm()
         {
@@ -20,94 +27,408 @@ namespace FraudDetection.Forms
 
         private void InitializeLogin()
         {
-            BackColor = Color.FromArgb(18, 18, 18);
-            AutoScroll = true;
+            BackColor =
+                Color.FromArgb(
+                    18,
+                    18,
+                    18
+                );
 
-            Panel container = new Panel
+            Size =
+                new Size(
+                    1600,
+                    900
+                );
+
+            StartPosition =
+                FormStartPosition.CenterScreen;
+
+            Text =
+                "TravaPix — Login";
+
+            Panel container =
+                new Panel
+                {
+                    Size =
+                        new Size(
+                            700,
+                            500
+                        ),
+
+                    BackColor =
+                        Color.FromArgb(
+                            28,
+                            28,
+                            28
+                        ),
+
+                    Location =
+                        new Point(
+                            430,
+                            170
+                        )
+                };
+
+            Controls.Add(
+                container
+            );
+
+            Label lblTitle =
+                new Label
+                {
+                    Text =
+                        "LOGIN",
+
+                    ForeColor =
+                        Color.White,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            26,
+                            FontStyle.Bold
+                        ),
+
+                    AutoSize =
+                        true,
+
+                    Location =
+                        new Point(
+                            280,
+                            35
+                        )
+                };
+
+            container.Controls.Add(
+                lblTitle
+            );
+
+            txtCpf =
+                CreateTextBox(
+                    "CPF",
+                    140
+                );
+
+            txtCpf.TextChanged += FormatCpf;
+
+            txtPassword =
+                CreateTextBox(
+                    "Senha",
+                    240
+                );
+
+            container.Controls.Add(
+                txtCpf
+            );
+
+            container.Controls.Add(
+                txtPassword
+            );
+
+            btnLogin =
+                new Button
+                {
+                    Text =
+                        "Entrar",
+
+                    Size =
+                        new Size(
+                            420,
+                            45
+                        ),
+
+                    Location =
+                        new Point(
+                            140,
+                            340
+                        ),
+
+                    BackColor =
+                        Color.FromArgb(
+                            0,
+                            120,
+                            215
+                        ),
+
+                    ForeColor =
+                        Color.White,
+
+                    FlatStyle =
+                        FlatStyle.Flat,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            11,
+                            FontStyle.Bold
+                        )
+                };
+
+            btnLogin.Click +=
+                BtnLogin_Click;
+
+            container.Controls.Add(
+                btnLogin
+            );
+
+            btnRegister =
+                new Button
+                {
+                    Text =
+                        "Criar Conta",
+
+                    Size =
+                        new Size(
+                            420,
+                            45
+                        ),
+
+                    Location =
+                        new Point(
+                            140,
+                            400
+                        ),
+
+                    BackColor =
+                        Color.FromArgb(
+                            45,
+                            45,
+                            45
+                        ),
+
+                    ForeColor =
+                        Color.White,
+
+                    FlatStyle =
+                        FlatStyle.Flat,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            10,
+                            FontStyle.Bold
+                        )
+                };
+
+            btnRegister.Click +=
+                (
+                    s,
+                    e
+                ) =>
             {
-                Size = new Size(900, 500),
-                BackColor = Color.FromArgb(28, 28, 28)
+                MainForm.Instance!
+                    .OpenForm(
+                        new RegisterForm()
+                    );
             };
 
-            container.Location = new Point(400, 160);
-            Controls.Add(container);
-
-            Label title = new Label
-            {
-                Text = "LOGIN",
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 24, FontStyle.Bold),
-                AutoSize = true,
-                Location = new Point(380, 40)
-            };
-
-            container.Controls.Add(title);
-
-            txtCpf = CreateTextBox("CPF", 140, 500);
-            txtPassword = CreateTextBox("Senha", 230, 500);
-            txtPassword.PasswordChar = '*';
-
-            container.Controls.Add(txtCpf);
-            container.Controls.Add(txtPassword);
-
-            btnLogin = new Button
-            {
-                Text = "Entrar",
-                Size = new Size(500, 45),
-                Location = new Point(200, 330),
-                BackColor = Color.FromArgb(0, 120, 215),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
-                Font = new Font("Segoe UI", 11, FontStyle.Bold)
-            };
-
-            btnLogin.Click += BtnLogin_Click;
-            container.Controls.Add(btnLogin);
+            container.Controls.Add(
+                btnRegister
+            );
         }
 
-        private TextBox CreateTextBox(string placeholder, int y, int width)
+        private void FormatCpf(
+            object? sender,
+            EventArgs e
+        )
         {
-            TextBox txt = new TextBox
-            {
-                Size = new Size(width, 40),
-                Location = new Point(200, y),
-                Text = placeholder,
-                BackColor = Color.FromArgb(40, 40, 40),
-                ForeColor = Color.White
-            };
+            string numbers =
+                Regex.Replace(
+                    txtCpf.Text,
+                    @"\D",
+                    ""
+                );
 
-            txt.GotFocus += (s, e) =>
+            if(numbers.Length > 11)
             {
-                if (txt.Text == placeholder)
-                    txt.Text = "";
-            };
+                numbers =
+                    numbers.Substring(
+                        0,
+                        11
+                    );
+            }
 
-            txt.LostFocus += (s, e) =>
+            string formatted = "";
+
+            if(numbers.Length <= 3)
             {
-                if (string.IsNullOrWhiteSpace(txt.Text))
-                    txt.Text = placeholder;
-            };
+                formatted = numbers;
+            }
+            else if(numbers.Length <= 6)
+            {
+                formatted =
+                    $"{numbers[..3]}.{numbers[3..]}";
+            }
+            else if(numbers.Length <= 9)
+            {
+                formatted =
+                    $"{numbers[..3]}.{numbers[3..6]}.{numbers[6..]}";
+            }
+            else
+            {
+                formatted =
+                    $"{numbers[..3]}.{numbers[3..6]}.{numbers[6..9]}-{numbers[9..]}";
+            }
+
+            txtCpf.TextChanged -=
+                FormatCpf;
+
+            txtCpf.Text =
+                formatted;
+
+            txtCpf.SelectionStart =
+                txtCpf.Text.Length;
+
+            txtCpf.TextChanged +=
+                FormatCpf;
+        }
+
+        private TextBox CreateTextBox(
+            string placeholder,
+            int y
+        )
+        {
+            TextBox txt =
+                new TextBox
+                {
+                    Size =
+                        new Size(
+                            420,
+                            40
+                        ),
+
+                    Location =
+                        new Point(
+                            140,
+                            y
+                        ),
+
+                    Text = placeholder,
+
+                    BackColor =
+                        Color.FromArgb(
+                            40,
+                            40,
+                            40
+                        ),
+
+                    ForeColor =
+                        Color.Gray,
+
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            11
+                        ),
+
+                    BorderStyle =
+                        BorderStyle.FixedSingle
+                };
+
+            bool isPasswordField =
+                placeholder.Contains(
+                    "Senha"
+                );
+
+            txt.GotFocus +=
+                (s,e)=>
+                {
+                    if(
+                        txt.Text ==
+                        placeholder
+                    )
+                    {
+                        txt.Text = "";
+
+                        txt.ForeColor =
+                            Color.White;
+
+                        if(isPasswordField)
+                        {
+                            txt.PasswordChar =
+                                '*';
+                        }
+                    }
+                };
+
+            txt.LostFocus +=
+                (s,e)=>
+                {
+                    if(
+                        string.IsNullOrWhiteSpace(
+                            txt.Text
+                        )
+                    )
+                    {
+                        txt.PasswordChar =
+                            '\0';
+
+                        txt.Text =
+                            placeholder;
+
+                        txt.ForeColor =
+                            Color.Gray;
+                    }
+                };
 
             return txt;
         }
 
-        private async void BtnLogin_Click(object? sender, EventArgs e)
+        private async void BtnLogin_Click(
+            object? sender,
+            EventArgs e
+        )
         {
-            var request = new
-            {
-                Cpf = txtCpf.Text,
-                Password = txtPassword.Text
-            };
-
             try
             {
-                string response = await apiService.Login(request);
+                LoginResponse response =
+                    await apiService.Login(
+                        new
+                        {
+                            Cpf =
+                                txtCpf.Text.Trim(),
 
-                MessageBox.Show(response, "Login");
+                            Password =
+                                txtPassword.Text.Trim()
+                        }
+                    );
+
+                    MessageBox.Show(
+                        "Login realizado com sucesso!"
+                    );
+
+                UserSession.Login(
+                    new User
+                    {
+                        Name =
+                            response.Name,
+
+                        Cpf =
+                            response.Cpf,
+
+                        Email =
+                            response.Email,
+
+                        Role =
+                            response.Role,
+                        
+                        CreditLimit = 
+                            response.CreditLimit
+                    }
+                );
+
+                MainForm.Instance?
+                    .UpdateAuthUI();
+
+                MainForm.Instance?
+                    .OpenDashboard();
             }
-            catch (Exception ex)
+            catch(Exception ex)
             {
-                MessageBox.Show(ex.Message, "Erro");
+                MessageBox.Show(
+                    ex.Message,
+                    "Erro Login"
+                );
             }
         }
     }

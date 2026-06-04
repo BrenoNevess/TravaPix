@@ -1,0 +1,103 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
+}
+
+<div class="welcome">
+    <h2>Olá, @Model.FirstName 👋</h2>
+    <p>Esta é a visão geral das suas transações e do nível de risco da sua conta.</p>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card accent">
+        <span class="stat-label">Saldo atual</span>
+        <span class="stat-value">R$ @Model.Balance.ToString("N2")</span>
+        <span class="stat-hint">Limite: R$ @Model.CreditLimit.ToString("N2")</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Transações</span>
+        <span class="stat-value">@Model.TransactionCount</span>
+        <span class="stat-hint">Total registradas</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Suspeitas</span>
+        <span class="stat-value warning">@Model.SuspiciousCount</span>
+        <span class="stat-hint">Requerem atenção</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Alto risco</span>
+        <span class="stat-value danger">@Model.HighRiskCount</span>
+        <span class="stat-hint">Possíveis fraudes</span>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3>Distribuição de risco</h3>
+    </div>
+    @{
+        int total = Model.TransactionCount;
+        int Pct(int v) => total == 0 ? 0 : (int)Math.Round(v * 100.0 / total);
+    }
+    <div class="risk-bars">
+        <div class="risk-row">
+            <span class="risk-name"><span class="dot dot-safe"></span> Seguras</span>
+            <div class="risk-track"><div class="risk-fill safe" style="width:@Pct(Model.SafeCount)%"></div></div>
+            <span class="risk-count">@Model.SafeCount</span>
+        </div>
+        <div class="risk-row">
+            <span class="risk-name"><span class="dot dot-warning"></span> Suspeitas</span>
+            <div class="risk-track"><div class="risk-fill warning" style="width:@Pct(Model.SuspiciousCount)%"></div></div>
+            <span class="risk-count">@Model.SuspiciousCount</span>
+        </div>
+        <div class="risk-row">
+            <span class="risk-name"><span class="dot dot-danger"></span> Alto risco</span>
+            <div class="risk-track"><div class="risk-fill danger" style="width:@Pct(Model.HighRiskCount)%"></div></div>
+            <span class="risk-count">@Model.HighRiskCount</span>
+        </div>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3>Transações recentes</h3>
+        <a class="link" href="@Url.Action("Index", "History")">Ver tudo</a>
+    </div>
+
+    @if (Model.RecentTransactions.Count == 0)
+    {
+        <div class="empty">Nenhuma transação ainda. <a href="@Url.Action("Create", "Transaction")">Crie a primeira</a>.</div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Remetente</th>
+                        <th>Destinatário</th>
+                        <th>Valor</th>
+                        <th>Risco</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Transaction t in Model.RecentTransactions)
+                    {
+                        <tr>
+                            <td>@t.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@t.SenderCpf</td>
+                            <td>@t.ReceiverCpf</td>
+                            <td>R$ @t.Amount.ToString("N2")</td>
+                            <td><span class="badge @t.RiskLevel.ToBadgeClass()">@t.RiskLevel.ToPortuguese()</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

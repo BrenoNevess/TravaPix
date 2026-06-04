@@ -10,6 +10,8 @@ namespace FraudDetection.API.DTOs
 
         public string Password { get; set; } = "";
 
+        public string ConfirmPassword { get; set; } = "";
+
         public string CardNumber { get; set; } = "";
 
         public string CardCvv { get; set; } = "";

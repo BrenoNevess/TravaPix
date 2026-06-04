@@ -1,0 +1,87 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Cadastro";
+    Layout = "_AuthLayout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true" />
+}
+
+<div class="auth-card auth-card-wide">
+    <h2 class="auth-title">Criar sua conta</h2>
+    <p class="auth-subtitle">Cadastre-se para começar a proteger suas transações.</p>
+
+    <form asp-controller="Account" asp-action="Register" method="post" novalidate>
+        @Html.AntiForgeryToken()
+        <div asp-validation-summary="All" class="validation-summary"></div>
+
+        <h3 class="form-section">Dados do usuário</h3>
+        <div class="grid-2">
+            <div class="field">
+                <label asp-for="Name"></label>
+                <input asp-for="Name" class="input" placeholder="Nome completo" autocomplete="name" />
+                <span asp-validation-for="Name" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Cpf"></label>
+                <input asp-for="Cpf" class="input" data-mask="cpf" inputmode="numeric" placeholder="000.000.000-00" />
+                <span asp-validation-for="Cpf" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" class="input" type="email" placeholder="voce@email.com" autocomplete="email" />
+                <span asp-validation-for="Email" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Location"></label>
+                <input asp-for="Location" class="input" placeholder="Cidade / Estado" />
+                <span asp-validation-for="Location" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="Password"></label>
+                <input asp-for="Password" class="input" type="password" placeholder="Mín. 8 caracteres" autocomplete="new-password" />
+                <span asp-validation-for="Password" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="ConfirmPassword"></label>
+                <input asp-for="ConfirmPassword" class="input" type="password" placeholder="Confirme sua senha" autocomplete="new-password" />
+                <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+            </div>
+        </div>
+
+        <h3 class="form-section">Dados do cartão</h3>
+        <div class="grid-2">
+            <div class="field">
+                <label asp-for="CardNumber"></label>
+                <input asp-for="CardNumber" class="input" data-mask="card" inputmode="numeric" placeholder="0000 0000 0000 0000" />
+                <span asp-validation-for="CardNumber" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="CardCvv"></label>
+                <input asp-for="CardCvv" class="input" inputmode="numeric" maxlength="4" placeholder="123" />
+                <span asp-validation-for="CardCvv" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="ExpiryDate"></label>
+                <input asp-for="ExpiryDate" class="input" data-mask="expiry" inputmode="numeric" maxlength="5" placeholder="MM/AA" />
+                <span asp-validation-for="ExpiryDate" class="field-error"></span>
+            </div>
+            <div class="field">
+                <label asp-for="CreditLimit"></label>
+                <input asp-for="CreditLimit" class="input" type="number" step="0.01" min="0" placeholder="0,00" />
+                <span asp-validation-for="CreditLimit" class="field-error"></span>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block">Cadastrar</button>
+    </form>
+
+    <p class="auth-switch">
+        Já tem conta? <a href="@Url.Action("Login", "Account")">Fazer login</a>
+    </p>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

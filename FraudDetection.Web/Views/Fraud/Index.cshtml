@@ -1,0 +1,64 @@
+@model FraudViewModel
+@{
+    ViewData["Title"] = "Fraudes";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/fraud.css" asp-append-version="true" />
+}
+
+<div class="fraud-summary">
+    <div class="stat-card">
+        <span class="stat-label">Suspeitas</span>
+        <span class="stat-value warning">@Model.SuspiciousCount</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Alto risco</span>
+        <span class="stat-value danger">@Model.HighRiskCount</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Total sinalizado</span>
+        <span class="stat-value">@Model.Frauds.Count</span>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3>Transações sinalizadas</h3>
+    </div>
+
+    @if (Model.Frauds.Count == 0)
+    {
+        <div class="empty">Nenhuma transação suspeita ou de alto risco detectada.</div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Remetente</th>
+                        <th>Destinatário</th>
+                        <th>Valor</th>
+                        <th>Local</th>
+                        <th>Risco</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Transaction t in Model.Frauds)
+                    {
+                        <tr>
+                            <td>@t.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@t.SenderCpf</td>
+                            <td>@t.ReceiverCpf</td>
+                            <td>R$ @t.Amount.ToString("N2")</td>
+                            <td>@(string.IsNullOrWhiteSpace(t.Location) ? "—" : t.Location)</td>
+                            <td><span class="badge @t.RiskLevel.ToBadgeClass()">@t.RiskLevel.ToPortuguese()</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -8,7 +8,6 @@ using FraudDetection.API.Services;
 namespace FraudDetection.API.Controllers
 {
     [ApiController]
-
     [Route("api/[controller]")]
     public class AuthController
         : ControllerBase
@@ -49,6 +48,17 @@ namespace FraudDetection.API.Controllers
                         request.Email
                 );
 
+                if(
+                !EmailValidator.Validate(
+                    request.Email
+                )
+            )
+            {
+                throw new Exception(
+                    "O email precisa ser válido!"
+                );
+            }
+
             if (emailExists)
             {
                 throw new Exception(
@@ -72,7 +82,13 @@ namespace FraudDetection.API.Controllers
                 );
             }
 
-            if(
+            // Validação sem salvar o cvv
+
+            if (
+                string.IsNullOrWhiteSpace(
+                    request.CardCvv
+                )
+                ||
                 request.CardCvv.Length < 3
                 ||
                 request.CardCvv.Length > 4
@@ -83,11 +99,14 @@ namespace FraudDetection.API.Controllers
                 );
             }
 
+            Guid userId = Guid.NewGuid();
+
             Card card =
                 new Card
                 {
-                    Id =
-                        Guid.NewGuid(),
+                    Id = Guid.NewGuid(),
+
+                    UserId = userId,
 
                     CardNumber =
                         request.CardNumber,
@@ -101,30 +120,27 @@ namespace FraudDetection.API.Controllers
                     UsedLimit = 0
                 };
 
-            User user =
-                new User
-                {
-                    Id =
-                        Guid.NewGuid(),
+        User user =
+            new User
+            {
+                Id = userId,
 
-                    Name =
-                        request.Name,
+                Name =
+                    request.Name,
 
-                    Cpf =
-                        request.Cpf,
+                Cpf =
+                    request.Cpf,
 
-                    Email =
-                        request.Email,
+                Email =
+                    request.Email,
 
-                    Password =
-                        request.Password,
+                Password =
+                    request.Password,
 
-                    Role =
-                        "USER",
+                Role = "USER",
 
-                    Card =
-                        card
-                };
+                Card = card
+            };
 
             _context.Users.Add(
                 user
@@ -132,13 +148,18 @@ namespace FraudDetection.API.Controllers
 
             _context.SaveChanges();
 
-            return Ok(
-                new
-                {
-                    message =
-                        "Usuário cadastrado com sucesso."
-                }
-            );
+            return Ok(new
+            {
+                success=true,
+                name=user.Name,
+                cpf=user.Cpf,
+                email=user.Email,
+                role=user.Role,
+                CreditLimit =
+                user.Card != null
+                ? user.Card.CreditLimit
+                : 0
+            });
         }
 
         [HttpPost("login")]
@@ -146,23 +167,34 @@ namespace FraudDetection.API.Controllers
             LoginRequest request
         )
         {
+            string cpf =
+                request.Cpf.Trim();
+
+            string password =
+                request.Password.Trim();
+
             User? user =
                 _context.Users
                     .FirstOrDefault(
                         u =>
-                            u.Cpf ==
-                            request.Cpf
+                            u.Cpf.Trim() ==
+                            cpf
                     );
 
+            if (user == null)
+            {
+                throw new Exception(
+                    "Usuário não encontrado."
+                );
+            }
+
             if(
-                user == null
-                ||
-                user.Password !=
-                    request.Password
+                user.Password.Trim()
+                != password
             )
             {
                 throw new Exception(
-                    "CPF ou senha inválidos."
+                    "Senha inválida."
                 );
             }
 
@@ -173,11 +205,8 @@ namespace FraudDetection.API.Controllers
                         "Login realizado.",
 
                     user.Name,
-
                     user.Cpf,
-
                     user.Email,
-
                     user.Role
                 }
             );

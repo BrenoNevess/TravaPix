@@ -32,12 +32,33 @@ namespace FraudDetection.API.Controllers
             );
         }
 
+        [HttpGet("user/{cpf}")]
+        public IActionResult GetUserTransactions(
+            string cpf
+        )
+        {
+            var transactions =
+                _context.Transactions
+                    .Where(
+                        t =>
+                            t.SenderCpf ==
+                            cpf
+                    )
+                    .ToList();
+
+            return Ok(
+                transactions
+            );
+        }
+
         [HttpPost]
         public IActionResult Create(
             TransactionRequest request
         )
         {
-            if (request.Amount <= 0)
+            if (
+                request.Amount <= 0
+            )
             {
                 throw new Exception(
                     "Valor inválido."
@@ -76,7 +97,8 @@ namespace FraudDetection.API.Controllers
                         request.Description,
 
                     RiskLevel =
-                        Enum.Parse<
+                        Enum.Parse
+                        <
                             FraudRiskLevel
                         >(
                             analysis.RiskLevel

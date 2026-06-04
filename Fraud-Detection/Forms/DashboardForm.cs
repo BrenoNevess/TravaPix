@@ -1,81 +1,94 @@
+using System.Text.Json;
 using System.Drawing;
 using System.Windows.Forms;
 
 using FraudDetection.Interface.Components;
-
-using FraudDetection.Repositories;
-using FraudDetection.Core;
+using FraudDetection.Services;
+using FraudDetection.Session;
+using FraudDetection.Models;
 
 namespace FraudDetection.Interface.Forms
 {
     public class DashboardForm : Form
     {
-        private DashboardCard cardUsers = null!;
+        private DashboardCard cardUser = null!;
         private DashboardCard cardTransactions = null!;
-        private DashboardCard cardFrauds = null!;
+        private DashboardCard cardBalance = null!;
 
-        private readonly FakeUserRepository
-            userRepository =
-                new FakeUserRepository();
-
-        private readonly FakeTransactionRepository
-            transactionRepository =
-                new FakeTransactionRepository();
-
-        private readonly FakeFraudRepository
-            fraudRepository =
-                new FakeFraudRepository();
+        private readonly ApiService
+            apiService = new();
 
         public DashboardForm()
         {
             InitializeDashboard();
         }
 
-        private void InitializeDashboard()
+        private async void InitializeDashboard()
         {
             BackColor =
-                Color.FromArgb(18, 18, 18);
+                Color.FromArgb(18,18,18);
 
             AutoScroll = true;
 
-            Panel container = new Panel
-            {
-                Size = new Size(1100, 700),
+            Panel container =
+                new Panel
+                {
+                    Size =
+                        new Size(
+                            1100,
+                            700
+                        ),
 
-                BackColor =
-                    Color.Transparent,
+                    BackColor =
+                        Color.Transparent
+                };
 
-                Anchor = AnchorStyles.None
-            };
-
-            Controls.Add(container);
+            Controls.Add(
+                container
+            );
 
             container.Location =
-                new Point(-250, -200);
+                new Point(-300,-200);
 
-            Label lblTitle = new Label
-            {
-                Text = "Visão Geral do Sistema",
+            Label lblTitle =
+                new Label
+                {
+                    Text =
+                        "Visão Geral",
 
-                ForeColor = Color.White,
+                    ForeColor =
+                        Color.White,
 
-                Font = new Font(
-                    "Segoe UI",
-                    24,
-                    FontStyle.Bold
-                ),
+                    Font =
+                        new Font(
+                            "Segoe UI",
+                            24,
+                            FontStyle.Bold
+                        ),
 
-                AutoSize = true,
+                    AutoSize = true,
 
-                Location = new Point(20, 20)
-            };
+                    Location =
+                        new Point(
+                            20,
+                            20
+                        )
+                };
 
-            container.Controls.Add(lblTitle);
+            container.Controls.Add(
+                lblTitle
+            );
 
-            cardUsers =
+            cardUser =
                 new DashboardCard(
-                    "Usuários",
-                    "0",
+                    "Usuário",
+
+                    UserSession.CurrentUser?
+                        .Name
+                        .Split(' ')[0]
+                    ??
+                    "Desconhecido",
+
                     Color.FromArgb(
                         0,
                         120,
@@ -83,13 +96,14 @@ namespace FraudDetection.Interface.Forms
                     )
                 );
 
-            cardUsers.Location =
-                new Point(20, 100);
+            cardUser.Location =
+                new Point(20,100);
 
             cardTransactions =
                 new DashboardCard(
                     "Transações",
                     "0",
+
                     Color.FromArgb(
                         40,
                         167,
@@ -98,24 +112,25 @@ namespace FraudDetection.Interface.Forms
                 );
 
             cardTransactions.Location =
-                new Point(390, 100);
+                new Point(390,100);
 
-            cardFrauds =
+            cardBalance =
                 new DashboardCard(
-                    "Fraudes",
-                    "0",
+                    "Saldo Atual",
+                    "R$ 0,00",
+
                     Color.FromArgb(
-                        220,
-                        53,
-                        69
+                        255,
+                        193,
+                        7
                     )
                 );
 
-            cardFrauds.Location =
-                new Point(760, 100);
+            cardBalance.Location =
+                new Point(760,100);
 
             container.Controls.Add(
-                cardUsers
+                cardUser
             );
 
             container.Controls.Add(
@@ -123,105 +138,97 @@ namespace FraudDetection.Interface.Forms
             );
 
             container.Controls.Add(
-                cardFrauds
+                cardBalance
             );
 
-            Panel chartPanel = new Panel
-            {
-                Size = new Size(1020, 350),
-
-                Location =
-                    new Point(20, 320),
-
-                BackColor =
-                    Color.FromArgb(
-                        28,
-                        28,
-                        28
-                    )
-            };
-
-            container.Controls.Add(
-                chartPanel
-            );
-
-            Label lblChart = new Label
-            {
-                Text =
-                    "Monitoramento Geral",
-
-                ForeColor = Color.White,
-
-                Font = new Font(
-                    "Segoe UI",
-                    16,
-                    FontStyle.Bold
-                ),
-
-                AutoSize = true,
-
-                Location = new Point(
-                    20,
-                    20
-                )
-            };
-
-            chartPanel.Controls.Add(
-                lblChart
-            );
-
-            Label lblInfo = new Label
-            {
-                Text =
-                    "Atualização automática ativada.",
-
-                ForeColor = Color.Gray,
-
-                Font = new Font(
-                    "Segoe UI",
-                    12
-                ),
-
-                AutoSize = true,
-
-                Location = new Point(
-                    20,
-                    80
-                )
-            };
-
-            chartPanel.Controls.Add(
-                lblInfo
-            );
-
-            LoadDashboardData();
-
-            EventBus.OnDataChanged +=
-                LoadDashboardData;
+            await LoadDashboardData();
         }
 
-        private void LoadDashboardData()
+        private async Task LoadDashboardData()
         {
-            cardUsers.UpdateValue(
-                userRepository
-                    .GetAll()
-                    .Count
-                    .ToString()
-            );
+            try
+            {
+                string cpf =
+                    UserSession
+                        .CurrentUser!
+                        .Cpf;
 
-            cardTransactions.UpdateValue(
-                transactionRepository
-                    .GetAll()
-                    .Count
-                    .ToString()
-            );
+                string json =
+                    await apiService
+                        .GetUserTransactions(
+                            cpf
+                        );
 
-            cardFrauds.UpdateValue(
-                fraudRepository
-                    .GetAll()
-                    .Count
-                    .ToString()
-            );
+                List<TransactionResponse>?
+                    transactions =
+                        JsonSerializer.Deserialize
+                        <
+                            List<TransactionResponse>
+                        >(
+                            json,
+                            new JsonSerializerOptions
+                            {
+                                PropertyNameCaseInsensitive =
+                                    true
+                            }
+                        );
+
+                int total =
+                    transactions?.Count
+                    ??
+                    0;
+
+                decimal balance =
+                    UserSession
+                        .CurrentUser!
+                        .CreditLimit;
+
+                if(
+                    transactions != null
+                )
+                {
+                    foreach(
+                        var t
+                        in transactions
+                    )
+                    {
+                        if(
+                            t.SenderCpf ==
+                            cpf
+                        )
+                        {
+                            balance -=
+                                t.Amount;
+                        }
+
+                        if(
+                            t.ReceiverCpf ==
+                            cpf
+                        )
+                        {
+                            balance +=
+                                t.Amount;
+                        }
+                    }
+                }
+
+                cardTransactions
+                    .UpdateValue(
+                        total.ToString()
+                    );
+
+                cardBalance
+                    .UpdateValue(
+                        $"R$ {balance:N2}"
+                    );
+            }
+            catch(Exception ex)
+            {
+                MessageBox.Show(
+                    ex.Message,
+                    "Erro Dashboard"
+                );
+            }
         }
     }
 }

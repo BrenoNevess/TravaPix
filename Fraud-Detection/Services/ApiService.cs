@@ -1,15 +1,20 @@
 using System.Text;
 using System.Text.Json;
+using System.Net.Http.Json;
+
+using FraudDetection.Models;
 
 namespace FraudDetection.Services
 {
     public class ApiService
     {
-        private readonly HttpClient client;
+        private readonly HttpClient
+            client;
 
         public ApiService()
         {
-            client = new HttpClient();
+            client =
+                new HttpClient();
 
             client.BaseAddress =
                 new Uri(
@@ -18,38 +23,31 @@ namespace FraudDetection.Services
         }
 
         public async Task<string> Register(
-            object data
+            object request
         )
         {
-            StringContent content =
-                new StringContent(
-                    JsonSerializer.Serialize(
-                        data
-                    ),
-                    Encoding.UTF8,
-                    "application/json"
-                );
-
             HttpResponseMessage response =
-                await client.PostAsync(
-                    "auth/register",
-                    content
+                await client.PostAsJsonAsync(
+                    "/api/auth/register",
+                    request
                 );
 
-            return await response
-                .Content
-                .ReadAsStringAsync();
+            string content =
+                await response.Content
+                    .ReadAsStringAsync();
+
+            MessageBox.Show(
+                $"STATUS: {response.StatusCode}\n\n{content}"
+            );
+
+            return content;
         }
 
-        public async Task<string> Login(
-            object data
-        )
+            public async Task<LoginResponse> Login(object data)
         {
             StringContent content =
                 new StringContent(
-                    JsonSerializer.Serialize(
-                        data
-                    ),
+                    JsonSerializer.Serialize(data),
                     Encoding.UTF8,
                     "application/json"
                 );
@@ -60,9 +58,24 @@ namespace FraudDetection.Services
                     content
                 );
 
-            return await response
-                .Content
-                .ReadAsStringAsync();
+            string json =
+                await response.Content
+                    .ReadAsStringAsync();
+
+            if(!response.IsSuccessStatusCode)
+            {
+                throw new Exception(
+                    $"Erro API: {json}"
+                );
+            }
+
+            return JsonSerializer.Deserialize<LoginResponse>(
+                json,
+                new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                }
+            )!;
         }
 
         public async Task<string>
@@ -101,6 +114,50 @@ namespace FraudDetection.Services
             return await response
                 .Content
                 .ReadAsStringAsync();
+        }
+
+        public async Task<string>
+            GetTransactions()
+        {
+            HttpResponseMessage response =
+                await client.GetAsync(
+                    "transaction"
+                );
+
+            return await response
+                .Content
+                .ReadAsStringAsync();
+        }
+
+        public async Task<string>
+            GetUserTransactions(
+                string cpf
+            )
+        {
+            HttpResponseMessage response =
+                await client.GetAsync(
+                    $"transaction/user/{cpf}"
+                );
+
+            return await response
+                .Content
+                .ReadAsStringAsync();
+        }
+
+        public async Task<decimal>
+        GetCreditLimit(string cpf)
+        {
+            HttpResponseMessage response =
+                await client.GetAsync(
+                    $"card/credit/{cpf}"
+                );
+
+            string json =
+                await response
+                    .Content
+                    .ReadAsStringAsync();
+
+            return decimal.Parse(json); 
         }
     }
 }

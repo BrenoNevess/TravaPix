@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-
 using FraudDetection.Models;
 using FraudDetection.Repositories;
 
@@ -7,18 +6,14 @@ namespace FraudDetection.Services
 {
     public class FraudService
     {
-        private readonly
-            IFraudRepository
-            _fraudRepository;
+        private readonly IFraudRepository _fraudRepository;
 
-        public FraudService()
+        public FraudService(IFraudRepository fraudRepository)
         {
-            _fraudRepository =
-                new FakeFraudRepository();
+            _fraudRepository = fraudRepository;
         }
 
-        public List<FraudRecord>
-            GetAllFrauds()
+        public List<FraudRecord> GetAllFrauds()
         {
             return _fraudRepository.GetAll();
         }
