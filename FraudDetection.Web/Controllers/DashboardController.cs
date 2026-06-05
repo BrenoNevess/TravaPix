@@ -20,7 +20,8 @@ namespace FraudDetection.Web.Controllers
         {
             DashboardViewModel model = await _dashboardService.GetDashboardAsync(
                 User.GetCpf(),
-                User.GetFirstName());
+                User.GetFirstName(),
+                User.IsAdmin());
 
             return View(model);
         }

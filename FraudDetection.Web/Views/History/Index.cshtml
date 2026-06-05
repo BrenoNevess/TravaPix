@@ -44,7 +44,16 @@
                             <td>R$ @t.Amount.ToString("N2")</td>
                             <td>@(string.IsNullOrWhiteSpace(t.Location) ? "—" : t.Location)</td>
                             <td>@(string.IsNullOrWhiteSpace(t.Description) ? "—" : t.Description)</td>
-                            <td><span class="badge @t.RiskLevel.ToBadgeClass()">@t.RiskLevel.ToPortuguese()</span></td>
+                            <td>
+                                @if (t.IsBlocked)
+                                {
+                                    <span class="badge badge-danger">Bloqueada</span>
+                                }
+                                else
+                                {
+                                    <span class="badge @t.RiskLevel.ToBadgeClass()">@t.RiskLevel.ToPortuguese()</span>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>

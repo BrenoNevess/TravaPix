@@ -21,6 +21,12 @@ namespace FraudDetection.Web.Models.ViewModels
 
         public int HighRiskCount { get; set; }
 
+        /// <summary>True quando o usuário logado é administrador.</summary>
+        public bool IsAdmin { get; set; }
+
+        /// <summary>Soma dos saldos de todas as contas (preenchido apenas para o admin).</summary>
+        public decimal SystemTotalBalance { get; set; }
+
         public IReadOnlyList<Transaction> RecentTransactions { get; set; }
             = new List<Transaction>();
     }

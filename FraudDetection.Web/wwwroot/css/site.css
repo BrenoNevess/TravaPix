@@ -79,6 +79,14 @@ h1, h2, h3, h4 { margin: 0; font-weight: 700; letter-spacing: -.01em; }
 }
 .btn-ghost:hover { background: var(--surface-2); }
 
+.btn-danger {
+    background: var(--danger);
+    color: #fff;
+}
+.btn-danger:hover { background: #cf3b40; }
+
+.btn-sm { padding: 7px 14px; font-size: 13px; }
+
 /* ---------- Formulários ---------- */
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
 .field label { font-size: 13px; color: var(--muted); font-weight: 600; }

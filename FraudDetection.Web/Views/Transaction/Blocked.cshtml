@@ -1,0 +1,45 @@
+@model BlockedTransactionViewModel
+@{
+    ViewData["Title"] = "Transação bloqueada";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/transaction.css" asp-append-version="true" />
+}
+
+<div class="tx-single">
+    <div class="panel block-panel">
+        <div class="block-icon">
+            <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.9" y1="4.9" x2="19.1" y2="19.1"/></svg>
+        </div>
+
+        <h2 class="block-title">Transação bloqueada</h2>
+        <p class="block-reason">@Model.BlockReason</p>
+
+        <ul class="review-meta">
+            <li><span>Destinatário</span><strong>@Model.ReceiverCpf</strong></li>
+            <li><span>Valor</span><strong>R$ @Model.Amount.ToString("N2")</strong></li>
+            <li><span>Destinatário bloqueado até</span><strong>@Model.BlockedUntil.ToString("dd/MM/yyyy HH:mm")</strong></li>
+        </ul>
+
+        @if (Model.Alerts.Count > 0)
+        {
+            <div class="callout callout-danger">
+                <strong>Motivos detectados</strong>
+                <ul>
+                    @foreach (string alert in Model.Alerts)
+                    {
+                        <li>@alert</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <p class="block-note">Por segurança, o CPF do destinatário ficará bloqueado por 8 horas. Caso seja um engano, tente novamente após esse período ou contate o administrador.</p>
+
+        <div class="review-actions">
+            <a class="btn btn-ghost" href="@Url.Action("Index", "Dashboard")">Voltar ao dashboard</a>
+            <a class="btn btn-primary" href="@Url.Action("Create", "Transaction")">Nova transação</a>
+        </div>
+    </div>
+</div>

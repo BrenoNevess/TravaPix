@@ -9,6 +9,8 @@ namespace FraudDetection.Web.Services
 {
     public class TransactionService : ITransactionService
     {
+        private const int BlockHours = 8;
+
         private readonly AppDbContext _context;
         private readonly IFraudDetectionService _fraudDetection;
 
@@ -20,11 +22,38 @@ namespace FraudDetection.Web.Services
             _fraudDetection = fraudDetection;
         }
 
-        public async Task<TransactionResultViewModel> CreateAsync(TransactionViewModel model)
+        public async Task<FraudAnalysisResult> AnalyzeAsync(
+            string senderCpf,
+            string receiverCpf,
+            decimal amount,
+            string? location)
         {
+            string sender = senderCpf.Trim();
+
+            string? senderLocation = await _context.Users
+                .Where(u => u.Cpf == sender)
+                .Select(u => u.Location)
+                .FirstOrDefaultAsync();
+
+            return _fraudDetection.Analyze(amount, DateTime.Now, location, senderLocation);
+        }
+
+        public async Task<BlockedRecipient?> GetActiveBlockAsync(string receiverCpf)
+        {
+            string receiver = receiverCpf.Trim();
             DateTime now = DateTime.Now;
 
-            FraudAnalysisResult analysis = _fraudDetection.Analyze(model.Amount, now);
+            return await _context.BlockedRecipients
+                .Where(b => b.ReceiverCpf == receiver && b.ExpiresAt > now)
+                .OrderByDescending(b => b.ExpiresAt)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<TransactionResultViewModel> CompleteAsync(
+            TransactionConfirmViewModel model,
+            FraudAnalysisResult analysis)
+        {
+            DateTime now = DateTime.Now;
 
             Transaction transaction = new()
             {
@@ -35,6 +64,10 @@ namespace FraudDetection.Web.Services
                 Location = model.Location?.Trim() ?? "",
                 Description = model.Description?.Trim() ?? "",
                 RiskLevel = analysis.RiskLevel,
+                IsBlocked = false,
+                SignedBy = string.IsNullOrWhiteSpace(model.SignatureName)
+                    ? null
+                    : model.SignatureName.Trim(),
                 CreatedAt = now
             };
 
@@ -47,6 +80,66 @@ namespace FraudDetection.Web.Services
                 Alerts = analysis.Alerts,
                 Amount = transaction.Amount,
                 CreatedAt = transaction.CreatedAt
+            };
+        }
+
+        public async Task<BlockedTransactionViewModel> BlockAsync(
+            TransactionConfirmViewModel model,
+            FraudAnalysisResult analysis)
+        {
+            DateTime now = DateTime.Now;
+            DateTime expiresAt = now.AddHours(BlockHours);
+            string sender = model.SenderCpf.Trim();
+            string receiver = model.ReceiverCpf.Trim();
+            string reason = analysis.BlockReason ?? "Transação de alto risco.";
+
+            // Registra a transação bloqueada (auditoria/histórico).
+            _context.Transactions.Add(new Transaction
+            {
+                Id = Guid.NewGuid(),
+                SenderCpf = sender,
+                ReceiverCpf = receiver,
+                Amount = model.Amount,
+                Location = model.Location?.Trim() ?? "",
+                Description = model.Description?.Trim() ?? "",
+                RiskLevel = analysis.RiskLevel,
+                IsBlocked = true,
+                CreatedAt = now
+            });
+
+            // Insere ou renova o bloqueio do destinatário (8h).
+            BlockedRecipient? existing = await _context.BlockedRecipients
+                .FirstOrDefaultAsync(b => b.ReceiverCpf == receiver && b.ExpiresAt > now);
+
+            if (existing is not null)
+            {
+                existing.SenderCpf = sender;
+                existing.Reason = reason;
+                existing.BlockedAt = now;
+                existing.ExpiresAt = expiresAt;
+            }
+            else
+            {
+                _context.BlockedRecipients.Add(new BlockedRecipient
+                {
+                    Id = Guid.NewGuid(),
+                    ReceiverCpf = receiver,
+                    SenderCpf = sender,
+                    Reason = reason,
+                    BlockedAt = now,
+                    ExpiresAt = expiresAt
+                });
+            }
+
+            await _context.SaveChangesAsync();
+
+            return new BlockedTransactionViewModel
+            {
+                ReceiverCpf = receiver,
+                Amount = model.Amount,
+                BlockReason = reason,
+                BlockedUntil = expiresAt,
+                Alerts = analysis.Alerts
             };
         }
 
@@ -63,9 +156,30 @@ namespace FraudDetection.Web.Services
         public async Task<IReadOnlyList<Transaction>> GetFraudulentAsync()
         {
             return await _context.Transactions
-                .Where(t => t.RiskLevel != FraudRiskLevel.Safe)
+                .Where(t => t.RiskLevel != FraudRiskLevel.Safe || t.IsBlocked)
                 .OrderByDescending(t => t.CreatedAt)
                 .ToListAsync();
+        }
+
+        public async Task<IReadOnlyList<BlockedRecipient>> GetActiveBlocksAsync()
+        {
+            DateTime now = DateTime.Now;
+
+            return await _context.BlockedRecipients
+                .Where(b => b.ExpiresAt > now)
+                .OrderByDescending(b => b.BlockedAt)
+                .ToListAsync();
+        }
+
+        public async Task RemoveBlockAsync(Guid id)
+        {
+            BlockedRecipient? block = await _context.BlockedRecipients.FindAsync(id);
+
+            if (block is not null)
+            {
+                _context.BlockedRecipients.Remove(block);
+                await _context.SaveChangesAsync();
+            }
         }
     }
 }

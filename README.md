@@ -52,20 +52,28 @@ Acesse **http://localhost:5079**. O fluxo: **Criar conta** → login automático
 
 ## Regras de detecção de fraude
 
-| Condição | Nível |
-|---|---|
-| Valor ≥ R$ 5.000 | **Alto Risco** |
-| Valor ≥ R$ 1.000 | **Suspeita** |
-| Horário ≤ 5h ou ≥ 23h | **Suspeita** |
+Ao clicar em transferir, o sistema **sempre pede confirmação dos dados** (revisão) antes de concluir. Conforme a análise (valor, horário e localização), ele toma uma de três ações:
 
-O nível final é sempre o de maior severidade entre as regras acionadas.
+| Cenário | Nível | Ação |
+|---|---|---|
+| Valor ≥ R$ 3.000 (extremamente elevado) | Alto Risco | **Bloquear** |
+| Valor ≥ R$ 1.000 **e** horário atípico (≤5h ou ≥23h) **e** localização diferente da cadastrada | Alto Risco | **Bloquear** |
+| Destinatário já bloqueado (lista de 8h ativa) | — | **Bloquear** |
+| Valor ≥ R$ 1.000 **ou** horário atípico | Suspeita | **Confirmação com assinatura** |
+| Caso contrário | Segura | **Permitir** |
+
+- **Bloqueio:** o CPF do destinatário entra numa **lista temporária de 8 horas**; novas transações para ele são barradas automaticamente, com aviso do motivo.
+- **Confirmação com assinatura:** em transações suspeitas, o usuário precisa **digitar o nome (assinatura)** e marcar **"estou ciente do risco"** para concluir.
+- O nível final é sempre o de maior severidade entre as regras acionadas (limiares configuráveis em `FraudDetectionService`).
 
 ## Acesso de administrador (página de Fraudes)
 
-A página **Fraudes** é restrita a usuários com papel `ADMIN`. Para promover um usuário já cadastrado:
+A página **Fraudes** é restrita a usuários com papel `ADMIN`. Lá o administrador vê as transações sinalizadas e a **lista de CPFs bloqueados** (com remetente, destinatário, motivo e validade), podendo **remover um bloqueio** manualmente.
+
+Para promover um usuário já cadastrado a administrador:
 
 ```sql
-UPDATE fraudetectiondb.Users SET Role = 'ADMIN' WHERE Cpf = '00000000000';
+UPDATE fraudetectiondb.Users SET Role = 'ADMIN' WHERE Cpf = '000.000.000-00';
 ```
 
 Depois, faça login novamente para o novo papel valer.

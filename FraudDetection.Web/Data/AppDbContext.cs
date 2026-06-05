@@ -13,6 +13,7 @@ namespace FraudDetection.Web.Data
         public DbSet<User> Users => Set<User>();
         public DbSet<Card> Cards => Set<Card>();
         public DbSet<Transaction> Transactions => Set<Transaction>();
+        public DbSet<BlockedRecipient> BlockedRecipients => Set<BlockedRecipient>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -21,6 +22,7 @@ namespace FraudDetection.Web.Data
             ConfigureUser(modelBuilder);
             ConfigureCard(modelBuilder);
             ConfigureTransaction(modelBuilder);
+            ConfigureBlockedRecipient(modelBuilder);
         }
 
         private static void ConfigureUser(ModelBuilder modelBuilder)
@@ -58,6 +60,15 @@ namespace FraudDetection.Web.Data
             modelBuilder.Entity<Transaction>().Property(t => t.Location).HasMaxLength(120);
             modelBuilder.Entity<Transaction>().Property(t => t.Description).HasMaxLength(500);
             modelBuilder.Entity<Transaction>().Property(t => t.Amount).HasPrecision(18, 2);
+            modelBuilder.Entity<Transaction>().Property(t => t.SignedBy).HasMaxLength(150);
+        }
+
+        private static void ConfigureBlockedRecipient(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<BlockedRecipient>().Property(b => b.ReceiverCpf).HasMaxLength(14);
+            modelBuilder.Entity<BlockedRecipient>().Property(b => b.SenderCpf).HasMaxLength(14);
+            modelBuilder.Entity<BlockedRecipient>().Property(b => b.Reason).HasMaxLength(255);
+            modelBuilder.Entity<BlockedRecipient>().HasIndex(b => b.ReceiverCpf);
         }
     }
 }

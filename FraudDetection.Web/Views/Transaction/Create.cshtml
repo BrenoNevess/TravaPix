@@ -7,11 +7,13 @@
     <link rel="stylesheet" href="~/css/transaction.css" asp-append-version="true" />
 }
 
-<div class="tx-grid">
+<div class="tx-single">
     <div class="panel">
         <div class="panel-head">
-            <h3>Processar transação</h3>
+            <h3>Dados da transação</h3>
         </div>
+
+        <p class="tx-hint">Os dados serão analisados pelo nosso sistema antes de concluir a transação.</p>
 
         <form asp-controller="Transaction" asp-action="Create" method="post" novalidate>
             @Html.AntiForgeryToken()
@@ -45,51 +47,8 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-block">Processar transação</button>
+            <button type="submit" class="btn btn-primary btn-block">Revisar transação</button>
         </form>
-    </div>
-
-    <div class="panel result-panel">
-        <div class="panel-head">
-            <h3>Resultado da análise</h3>
-        </div>
-
-        @if (Model.Result is null)
-        {
-            <div class="result-empty">
-                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                <p>Preencha os dados e processe uma transação para ver a análise de risco.</p>
-            </div>
-        }
-        else
-        {
-            <div class="result-risk @Model.Result.RiskLevel.ToBadgeClass()">
-                <span class="result-risk-label">Nível de risco</span>
-                <span class="result-risk-value">@Model.Result.RiskLevel.ToPortuguese()</span>
-            </div>
-
-            <ul class="result-meta">
-                <li><span>Valor</span><strong>R$ @Model.Result.Amount.ToString("N2")</strong></li>
-                <li><span>Processada em</span><strong>@Model.Result.CreatedAt.ToString("dd/MM/yyyy HH:mm")</strong></li>
-            </ul>
-
-            @if (Model.Result.Alerts.Count > 0)
-            {
-                <div class="result-alerts">
-                    <h4>Alertas</h4>
-                    <ul>
-                        @foreach (string alert in Model.Result.Alerts)
-                        {
-                            <li>@alert</li>
-                        }
-                    </ul>
-                </div>
-            }
-            else
-            {
-                <p class="result-ok">Nenhum alerta. Transação dentro do padrão esperado.</p>
-            }
-        }
     </div>
 </div>
 

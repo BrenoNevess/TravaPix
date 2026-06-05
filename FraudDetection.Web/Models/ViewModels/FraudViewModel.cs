@@ -10,6 +10,9 @@ namespace FraudDetection.Web.Models.ViewModels
         public IReadOnlyList<Transaction> Frauds { get; set; }
             = new List<Transaction>();
 
+        public IReadOnlyList<BlockedRecipient> BlockedRecipients { get; set; }
+            = new List<BlockedRecipient>();
+
         public int SuspiciousCount { get; set; }
 
         public int HighRiskCount { get; set; }

@@ -10,6 +10,7 @@ namespace FraudDetection.Web.Services
     public class DashboardService : IDashboardService
     {
         private const int RecentCount = 5;
+        private const string AdminRole = "ADMIN";
 
         private readonly AppDbContext _context;
         private readonly ITransactionService _transactions;
@@ -22,7 +23,7 @@ namespace FraudDetection.Web.Services
             _transactions = transactions;
         }
 
-        public async Task<DashboardViewModel> GetDashboardAsync(string cpf, string firstName)
+        public async Task<DashboardViewModel> GetDashboardAsync(string cpf, string firstName, bool isAdmin)
         {
             cpf = cpf.Trim();
 
@@ -34,15 +35,16 @@ namespace FraudDetection.Web.Services
             IReadOnlyList<Transaction> transactions =
                 await _transactions.GetByUserAsync(cpf);
 
+            // Transações bloqueadas não movimentaram dinheiro: ignoradas no saldo.
             decimal sent = transactions
-                .Where(t => t.SenderCpf == cpf)
+                .Where(t => t.SenderCpf == cpf && !t.IsBlocked)
                 .Sum(t => t.Amount);
 
             decimal received = transactions
-                .Where(t => t.ReceiverCpf == cpf)
+                .Where(t => t.ReceiverCpf == cpf && !t.IsBlocked)
                 .Sum(t => t.Amount);
 
-            return new DashboardViewModel
+            DashboardViewModel model = new()
             {
                 FirstName = firstName,
                 CreditLimit = creditLimit,
@@ -51,8 +53,44 @@ namespace FraudDetection.Web.Services
                 SafeCount = transactions.Count(t => t.RiskLevel == FraudRiskLevel.Safe),
                 SuspiciousCount = transactions.Count(t => t.RiskLevel == FraudRiskLevel.Suspicious),
                 HighRiskCount = transactions.Count(t => t.RiskLevel == FraudRiskLevel.HighRisk),
-                RecentTransactions = transactions.Take(RecentCount).ToList()
+                RecentTransactions = transactions.Take(RecentCount).ToList(),
+                IsAdmin = isAdmin
             };
+
+            // O saldo total do sistema é calculado apenas para o administrador.
+            if (isAdmin)
+            {
+                model.SystemTotalBalance = await ComputeSystemTotalBalanceAsync();
+            }
+
+            return model;
+        }
+
+        /// <summary>
+        /// Soma dos saldos das contas de usuários comuns (contas de administrador
+        /// são desconsideradas): total de limites concedidos, menos o que enviaram,
+        /// mais o que receberam (ignorando transações bloqueadas).
+        /// </summary>
+        private async Task<decimal> ComputeSystemTotalBalanceAsync()
+        {
+            decimal totalLimit = await _context.Cards
+                .Where(c => c.User.Role != AdminRole)
+                .SumAsync(c => (decimal?)c.CreditLimit) ?? 0m;
+
+            List<string> userCpfs = await _context.Users
+                .Where(u => u.Role != AdminRole)
+                .Select(u => u.Cpf)
+                .ToListAsync();
+
+            decimal sent = await _context.Transactions
+                .Where(t => !t.IsBlocked && userCpfs.Contains(t.SenderCpf))
+                .SumAsync(t => (decimal?)t.Amount) ?? 0m;
+
+            decimal received = await _context.Transactions
+                .Where(t => !t.IsBlocked && userCpfs.Contains(t.ReceiverCpf))
+                .SumAsync(t => (decimal?)t.Amount) ?? 0m;
+
+            return totalLimit - sent + received;
         }
     }
 }

@@ -48,7 +48,7 @@ namespace FraudDetection.Web.Models.ViewModels
         [Display(Name = "Validade (MM/AA)")]
         public string ExpiryDate { get; set; } = "";
 
-        [Range(0.01, 9_999_999, ErrorMessage = "Informe um limite válido.")]
+        [Range(0.01, 999_999_999, ErrorMessage = "Informe um limite válido.")]
         [Display(Name = "Limite do cartão")]
         public decimal CreditLimit { get; set; }
     }

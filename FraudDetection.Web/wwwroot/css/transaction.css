@@ -1,24 +1,87 @@
-/* Nova Transação */
-.tx-grid {
-    display: grid;
-    grid-template-columns: 1.4fr 1fr;
-    gap: 22px;
-    align-items: start;
-}
-.tx-grid .panel { margin-bottom: 0; }
+/* Nova Transação — formulário, revisão, assinatura, bloqueio e resultado */
+.tx-single { max-width: 640px; }
+.tx-hint { color: var(--muted); font-size: 14px; margin: 0 0 18px; }
 
-/* Resultado */
-.result-empty {
-    text-align: center;
-    color: var(--muted);
-    padding: 30px 10px;
+/* ----- Revisão de valor ----- */
+.review-amount {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 16px 18px;
+    margin-bottom: 18px;
 }
-.result-empty svg { color: var(--muted-2); margin-bottom: 12px; }
-.result-empty p { margin: 0; font-size: 14px; }
+.review-amount span { color: var(--muted); font-size: 13px; }
+.review-amount strong { font-size: 28px; font-weight: 800; letter-spacing: -.02em; }
+
+.review-meta { list-style: none; margin: 0 0 18px; padding: 0; }
+.review-meta li {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border-soft);
+    font-size: 14px;
+}
+.review-meta li:last-child { border-bottom: none; }
+.review-meta span { color: var(--muted); }
+.review-meta strong { text-align: right; word-break: break-word; }
+
+/* ----- Callouts ----- */
+.callout {
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+}
+.callout strong { display: block; margin-bottom: 4px; }
+.callout p { margin: 4px 0 0; font-size: 14px; }
+.callout ul { margin: 8px 0 0; padding-left: 18px; }
+.callout li { font-size: 14px; margin-bottom: 4px; }
+.callout-note { color: var(--muted); font-size: 13px !important; }
+
+.callout-danger { background: var(--danger-soft); border-color: rgba(229, 72, 77, .35); color: var(--danger); }
+.callout-warning { background: var(--warning-soft); border-color: rgba(245, 166, 35, .35); color: var(--warning); }
+.callout-safe { background: var(--safe-soft); border-color: rgba(25, 195, 125, .3); color: var(--accent); }
+.callout-danger p, .callout-warning p, .callout-safe p,
+.callout-danger li, .callout-warning li, .callout-safe li { color: var(--text); }
+
+/* ----- Assinatura digital ----- */
+.signature-box {
+    background: var(--bg-2);
+    border: 1px dashed var(--border);
+    border-radius: var(--radius-sm);
+    padding: 18px;
+    margin-bottom: 18px;
+}
+.signature-box h4 { font-size: 15px; margin-bottom: 6px; }
+.signature-box > p { color: var(--muted); font-size: 13.5px; margin: 0 0 14px; }
+
+.check { display: flex; align-items: center; gap: 10px; font-size: 14px; cursor: pointer; }
+.check input { width: 17px; height: 17px; accent-color: var(--accent); }
+
+/* ----- Ações ----- */
+.review-actions { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+.review-actions .btn { min-width: 150px; }
+
+/* ----- Bloqueio ----- */
+.block-panel { text-align: center; }
+.block-icon { color: var(--danger); display: flex; justify-content: center; margin-bottom: 10px; }
+.block-title { font-size: 24px; margin-bottom: 6px; }
+.block-reason { color: var(--text); font-size: 15px; margin: 0 auto 18px; max-width: 460px; }
+.block-note { color: var(--muted); font-size: 13.5px; margin: 4px 0 20px; }
+.block-panel .review-meta { text-align: left; }
+.block-panel .review-actions { justify-content: center; }
+
+/* ----- Resultado (sucesso) ----- */
+.result-ok-icon { color: var(--accent); display: flex; justify-content: center; margin-bottom: 8px; }
+.result-title { text-align: center; font-size: 24px; margin-bottom: 18px; }
 
 .result-risk {
     border-radius: var(--radius-sm);
-    padding: 18px 20px;
+    padding: 16px 18px;
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -27,23 +90,7 @@
 .result-risk-label { font-size: 12.5px; font-weight: 600; opacity: .85; }
 .result-risk-value { font-size: 24px; font-weight: 800; letter-spacing: -.02em; }
 
-.result-meta { list-style: none; margin: 0 0 18px; padding: 0; }
-.result-meta li {
-    display: flex;
-    justify-content: space-between;
-    padding: 11px 0;
-    border-bottom: 1px solid var(--border-soft);
-    font-size: 14px;
-}
-.result-meta li:last-child { border-bottom: none; }
-.result-meta span { color: var(--muted); }
-
-.result-alerts h4 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--warning); margin-bottom: 10px; }
-.result-alerts ul { margin: 0; padding-left: 18px; }
-.result-alerts li { color: var(--text); font-size: 14px; margin-bottom: 6px; }
-
-.result-ok { color: var(--accent); font-size: 14px; margin: 0; }
-
-@media (max-width: 900px) {
-    .tx-grid { grid-template-columns: 1fr; }
+@media (max-width: 560px) {
+    .review-actions { flex-direction: column-reverse; }
+    .review-actions .btn { width: 100%; }
 }

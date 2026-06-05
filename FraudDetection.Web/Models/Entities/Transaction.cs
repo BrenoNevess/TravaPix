@@ -21,6 +21,12 @@ namespace FraudDetection.Web.Models.Entities
 
         public FraudRiskLevel RiskLevel { get; set; }
 
+        /// <summary>True quando a transação foi barrada pelo motor (não concluída).</summary>
+        public bool IsBlocked { get; set; }
+
+        /// <summary>Nome assinado pelo usuário ao confirmar uma transação suspeita (auditoria).</summary>
+        public string? SignedBy { get; set; }
+
         public DateTime CreatedAt { get; set; }
     }
 }

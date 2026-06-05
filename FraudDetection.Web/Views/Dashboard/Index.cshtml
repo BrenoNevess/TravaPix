@@ -12,6 +12,21 @@
     <p>Esta é a visão geral das suas transações e do nível de risco da sua conta.</p>
 </div>
 
+@if (Model.IsAdmin)
+{
+    <div class="admin-total">
+        <div class="admin-total-info">
+            <span class="admin-total-label">Saldo total do sistema</span>
+            <span class="admin-total-value">R$ @Model.SystemTotalBalance.ToString("N2")</span>
+            <span class="admin-total-hint">Soma dos saldos das contas de usuários comuns, sem contar administradores (em tempo real)</span>
+        </div>
+        <span class="admin-total-tag">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Visão do administrador
+        </span>
+    </div>
+}
+
 <div class="stats-grid">
     <div class="stat-card accent">
         <span class="stat-label">Saldo atual</span>

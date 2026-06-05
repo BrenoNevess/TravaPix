@@ -16,7 +16,7 @@ namespace FraudDetection.Web.Models.ViewModels
         [Display(Name = "CPF do destinatário")]
         public string ReceiverCpf { get; set; } = "";
 
-        [Range(0.01, 99_999_999, ErrorMessage = "Informe um valor válido.")]
+        [Range(0.01, 999_999_999, ErrorMessage = "Informe um valor válido.")]
         [Display(Name = "Valor da transação")]
         public decimal Amount { get; set; }
 
