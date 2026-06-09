@@ -1,0 +1,32 @@
+name: CI - Testes
+
+# Roda os testes automaticamente a cada push ou pull request
+# nas branches principais.
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    name: Build e Testes (.NET)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Restaurar dependências
+        run: dotnet restore TravaPix.Tests/TravaPix.Tests.csproj
+
+      - name: Compilar
+        run: dotnet build TravaPix.Tests/TravaPix.Tests.csproj --configuration Release --no-restore
+
+      - name: Rodar testes
+        run: dotnet test TravaPix.Tests/TravaPix.Tests.csproj --configuration Release --no-build --verbosity normal
