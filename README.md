@@ -2,14 +2,14 @@
 
 Sistema **web** de detecção de fraudes em transações financeiras, escrito em **C# / ASP.NET Core MVC**, com banco **MySQL** em container Docker. Cada transação é analisada (valor e horário) e classificada como **Segura**, **Suspeita** ou **Alto Risco**.
 
-A interface é renderizada na web (HTML + CSS, tema *dark fintech*) e a lógica fica em C#, separada da parte visual, seguindo o modelo **MVC** (Controllers / Models / Views)(https://github.com/BrenoNevess/BeatSense).
+A interface é renderizada na web (HTML + CSS, tema *dark fintech*) e a lógica fica em C#, separada da parte visual, seguindo o modelo **MVC** (Controllers / Models / Views).
 
 ## Estrutura
 
 | Projeto | Descrição |
 |---|---|
 | **`TravaPix/`** | Aplicação principal (site MVC). Controllers + Views (Razor/HTML) + CSS por página, Services (lógica), `AppDbContext` (EF Core) acessando o MySQL. |
-| `FraudDetection.API/` | Web API original (mantida como referência histórica). |
+| `FraudDetection.API/` | Web API original (mantida como referência). |
 | `Fraud-Detection/` | Cliente WinForms original (substituído pela versão web; mantido como referência). |
 
 ### Organização do `TravaPix`
