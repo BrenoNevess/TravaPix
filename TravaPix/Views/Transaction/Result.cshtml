@@ -1,0 +1,46 @@
+@model TransactionResultViewModel
+@{
+    ViewData["Title"] = "Transação concluída";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/transaction.css" asp-append-version="true" />
+}
+
+<div class="tx-single">
+    <div class="panel">
+        <div class="result-ok-icon">
+            <svg viewBox="0 0 24 24" width="46" height="46" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+
+        <h2 class="result-title">Transação concluída</h2>
+
+        <div class="result-risk @Model.RiskLevel.ToBadgeClass()">
+            <span class="result-risk-label">Nível de risco</span>
+            <span class="result-risk-value">@Model.RiskLevel.ToPortuguese()</span>
+        </div>
+
+        <ul class="review-meta">
+            <li><span>Valor</span><strong>R$ @Model.Amount.ToString("N2")</strong></li>
+            <li><span>Processada em</span><strong>@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</strong></li>
+        </ul>
+
+        @if (Model.Alerts.Count > 0)
+        {
+            <div class="callout callout-warning">
+                <strong>Alertas</strong>
+                <ul>
+                    @foreach (string alert in Model.Alerts)
+                    {
+                        <li>@alert</li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="review-actions">
+            <a class="btn btn-ghost" href="@Url.Action("Index", "History")">Ver histórico</a>
+            <a class="btn btn-primary" href="@Url.Action("Create", "Transaction")">Nova transação</a>
+        </div>
+    </div>
+</div>

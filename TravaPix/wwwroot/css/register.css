@@ -1,0 +1,6 @@
+/* Página de Cadastro */
+.auth-card-wide .btn-block { margin-top: 8px; }
+
+/* No cadastro os campos ficam em duas colunas (herda .grid-2);
+   em telas estreitas o site.css já força uma coluna. */
+.auth-card-wide .form-section:first-of-type { margin-top: 0; }

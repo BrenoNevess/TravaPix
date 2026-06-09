@@ -1,0 +1,57 @@
+@model TransactionViewModel
+@{
+    ViewData["Title"] = "Nova Transação";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/transaction.css" asp-append-version="true" />
+}
+
+<div class="tx-single">
+    <div class="panel">
+        <div class="panel-head">
+            <h3>Dados da transação</h3>
+        </div>
+
+        <p class="tx-hint">Os dados serão analisados pelo nosso sistema antes de concluir a transação.</p>
+
+        <form asp-controller="Transaction" asp-action="Create" method="post" novalidate>
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="validation-summary"></div>
+
+            <div class="grid-2">
+                <div class="field">
+                    <label asp-for="SenderCpf"></label>
+                    <input asp-for="SenderCpf" class="input" data-mask="cpf" inputmode="numeric" placeholder="000.000.000-00" />
+                    <span asp-validation-for="SenderCpf" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="ReceiverCpf"></label>
+                    <input asp-for="ReceiverCpf" class="input" data-mask="cpf" inputmode="numeric" placeholder="000.000.000-00" />
+                    <span asp-validation-for="ReceiverCpf" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Amount"></label>
+                    <input asp-for="Amount" class="input" type="number" step="0.01" min="0" placeholder="0,00" />
+                    <span asp-validation-for="Amount" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Location"></label>
+                    <input asp-for="Location" class="input" placeholder="Cidade / Estado" />
+                    <span asp-validation-for="Location" class="field-error"></span>
+                </div>
+                <div class="field field-full">
+                    <label asp-for="Description"></label>
+                    <input asp-for="Description" class="input" placeholder="Descrição da transação" />
+                    <span asp-validation-for="Description" class="field-error"></span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block">Revisar transação</button>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

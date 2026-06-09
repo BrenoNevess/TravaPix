@@ -1,0 +1,127 @@
+@model FraudViewModel
+@{
+    ViewData["Title"] = "Fraudes";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/fraud.css" asp-append-version="true" />
+}
+
+<div class="fraud-summary">
+    <div class="stat-card">
+        <span class="stat-label">Suspeitas</span>
+        <span class="stat-value warning">@Model.SuspiciousCount</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Alto risco</span>
+        <span class="stat-value danger">@Model.HighRiskCount</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">CPFs bloqueados</span>
+        <span class="stat-value danger">@Model.BlockedRecipients.Count</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-label">Total sinalizado</span>
+        <span class="stat-value">@Model.Frauds.Count</span>
+    </div>
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3>CPFs bloqueados (8h)</h3>
+        <span class="count-pill">@Model.BlockedRecipients.Count ativo(s)</span>
+    </div>
+
+    @if (Model.BlockedRecipients.Count == 0)
+    {
+        <div class="empty">Nenhum CPF bloqueado no momento.</div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Remetente</th>
+                        <th>Destinatário bloqueado</th>
+                        <th>Motivo</th>
+                        <th>Bloqueado em</th>
+                        <th>Expira em</th>
+                        <th>Ação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (BlockedRecipient b in Model.BlockedRecipients)
+                    {
+                        <tr>
+                            <td>@b.SenderCpf</td>
+                            <td><span class="badge badge-danger">@b.ReceiverCpf</span></td>
+                            <td>@b.Reason</td>
+                            <td>@b.BlockedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@b.ExpiresAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>
+                                <form asp-controller="Fraud" asp-action="RemoveBlock" method="post" class="inline-form">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@b.Id" />
+                                    <button type="submit" class="btn btn-ghost btn-sm">Remover bloqueio</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="panel">
+    <div class="panel-head">
+        <h3>Transações sinalizadas</h3>
+    </div>
+
+    @if (Model.Frauds.Count == 0)
+    {
+        <div class="empty">Nenhuma transação suspeita ou de alto risco detectada.</div>
+    }
+    else
+    {
+        <div class="table-wrap">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Data</th>
+                        <th>Remetente</th>
+                        <th>Destinatário</th>
+                        <th>Valor</th>
+                        <th>Local</th>
+                        <th>Risco</th>
+                        <th>Situação</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Transaction t in Model.Frauds)
+                    {
+                        <tr>
+                            <td>@t.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@t.SenderCpf</td>
+                            <td>@t.ReceiverCpf</td>
+                            <td>R$ @t.Amount.ToString("N2")</td>
+                            <td>@(string.IsNullOrWhiteSpace(t.Location) ? "—" : t.Location)</td>
+                            <td><span class="badge @t.RiskLevel.ToBadgeClass()">@t.RiskLevel.ToPortuguese()</span></td>
+                            <td>
+                                @if (t.IsBlocked)
+                                {
+                                    <span class="badge badge-danger">Bloqueada</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-safe">Concluída</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

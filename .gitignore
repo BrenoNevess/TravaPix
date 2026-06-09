@@ -2,11 +2,14 @@
 bin/
 obj/
 
+# Visual Studio
+.vs/
+
 # VS Code
 .vscode/
 
-# Visual Studio
-.vs/
+# Rider
+.idea/
 
 # User files
 *.user
@@ -14,3 +17,13 @@ obj/
 
 # Logs
 *.log
+
+# NuGet
+packages/
+
+# Environment
+.env
+
+# OS
+.DS_Store
+Thumbs.db

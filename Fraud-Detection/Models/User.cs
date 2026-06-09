@@ -1,0 +1,21 @@
+namespace FraudDetection.Models
+{
+    public class User
+    {
+        public string Name { get; set; } = "";
+
+        public string Cpf { get; set; } = "";
+
+        public string Email { get; set; } = "";
+
+        public string Password { get; set; } = "";
+
+        public decimal CreditLimit { get; set; }
+        
+        public string Location { get; set; } = "";
+
+        public string Role { get; set; } = "USER";
+
+        public Card Card { get; set; } = new();
+    }
+}
