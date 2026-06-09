@@ -1,18 +1,18 @@
-# Fraud-Detection · TravaPix
+# Sistema de Detecção de Fraudes · TravaPix
 
 Sistema **web** de detecção de fraudes em transações financeiras, escrito em **C# / ASP.NET Core MVC**, com banco **MySQL** em container Docker. Cada transação é analisada (valor e horário) e classificada como **Segura**, **Suspeita** ou **Alto Risco**.
 
-A interface é renderizada na web (HTML + CSS, tema *dark fintech*) e a lógica fica em C#, separada da parte visual, seguindo o modelo **MVC** (Controllers / Models / Views) — no mesmo espírito de organização do projeto [BeatSense](https://github.com/BrenoNevess/BeatSense).
+A interface é renderizada na web (HTML + CSS, tema *dark fintech*) e a lógica fica em C#, separada da parte visual, seguindo o modelo **MVC** (Controllers / Models / Views)(https://github.com/BrenoNevess/BeatSense).
 
-## Estrutura da solução
+## Estrutura
 
 | Projeto | Descrição |
 |---|---|
-| **`FraudDetection.Web/`** | 🟢 Aplicação principal (site MVC). Controllers + Views (Razor/HTML) + CSS por página, Services (lógica), `AppDbContext` (EF Core) acessando o MySQL. |
+| **`TravaPix/`** | Aplicação principal (site MVC). Controllers + Views (Razor/HTML) + CSS por página, Services (lógica), `AppDbContext` (EF Core) acessando o MySQL. |
 | `FraudDetection.API/` | Web API original (mantida como referência histórica). |
 | `Fraud-Detection/` | Cliente WinForms original (substituído pela versão web; mantido como referência). |
 
-### Organização do `FraudDetection.Web`
+### Organização do `TravaPix`
 
 ```
 Controllers/   Home, Account (login/cadastro/logout), Dashboard, Transaction, History, Fraud
@@ -38,7 +38,7 @@ wwwroot/js/    site.js (máscaras de CPF/cartão + menu responsivo)
 docker compose up -d
 
 # 2. Aplicar o banco de dados
-cd FraudDetection.Web
+cd TravaPix
 dotnet ef database update
 
 # 3. Rodar o site
@@ -47,7 +47,7 @@ dotnet run
 
 Acesse **http://localhost:5079**. O fluxo: **Criar conta** → login automático → **Dashboard** → **Nova Transação** → **Histórico**.
 
-> Conexão configurada em `FraudDetection.Web/appsettings.json`
+> Conexão configurada em `TravaPix/appsettings.json`
 > (`server=localhost;port=3307;database=fraudetectiondb;...`).
 
 ## Regras de detecção de fraude

@@ -2,10 +2,7 @@ using System.Text.RegularExpressions;
 
 namespace FraudDetection.Web.Services
 {
-    /// <summary>
-    /// Regras de força de senha: mínimo de 8 caracteres, maiúscula, número,
-    /// caractere especial e não pode conter nome, CPF ou e-mail.
-    /// </summary>
+    // Regras de força de senha: minimo de 8 caracteres, maiuscula, número,caractere especial e n pode conter nome, CPF ou e-mail
     public static class PasswordValidator
     {
         public static bool Validate(
